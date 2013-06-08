@@ -1,6 +1,6 @@
 {
    "version": "v0.8.15"
-  ,"npm": false
+  ,"npm": true
   ,"main": "app.js"
   ,"args": []
   ,"envs": {}
