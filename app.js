@@ -287,4 +287,4 @@ wss.on('connection', function(ws) {
 	});
 });
 
-server.listen(80);
+server.listen(443);
