@@ -149,7 +149,6 @@ var commit = function(instanceIndex) {
         broadcast(instanceIndex, 'L' + option);
       break;
       case 'm':
-        option = splitForSyntax1(msg);
         broadcast(instanceIndex, 'F@');
       break;
       case 'n':
@@ -190,7 +189,7 @@ wss.on('connection', function(ws) {
     }
     
     if(user !== null) {
-      if(user.name === instanceList[instanceIndex].controller.user.name) {
+      if(user === instanceList[instanceIndex].controller.user) {
         instanceList[instanceIndex].controller.user = null;
         instanceList[instanceIndex].controller.isApproved = false;
       }
@@ -262,12 +261,12 @@ wss.on('connection', function(ws) {
           instanceList[instanceIndex].controller.sentMessagePool.length = 0;
           instanceList[instanceIndex].controller.receivedJsonPool.length = 0;
         break;
+        case 'i':
+          commit(instanceIndex);
+        break;
         case 'j':
           option = splitForSyntax1(msg);
           sendController(instanceIndex, 'K' + user.name + ' ' + option);
-        break;
-        case 'i':
-          commit(instanceIndex);
         break;
         case 'k':
         case 'l':
