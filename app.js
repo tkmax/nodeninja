@@ -204,7 +204,7 @@ wss.on('connection', function(ws) {
   });
   
   ws.on('message', function(msg) {
-    var instanceIndex = msg[0], user = null, i, result, option;
+    var instanceIndex = msg.charCodeAt(0), user = null, i, result, option;
     msg = msg.substring(1);
     
     if(instanceIndex >= instanceList.length || msg.length === 0) return;
