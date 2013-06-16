@@ -198,12 +198,13 @@ wss.on('connection', function(ws) {
       if(instanceList[instanceIndex].controller.user === null
       && instanceList[instanceIndex].userList.length > 0
       ){
-        sendJsonStorage(instanceIndex, user);
+        sendJsonStorage(instanceIndex, instanceList[instanceIndex].userList[0]);
       }
     }
   });
+  
   ws.on('message', function(msg) {
-    var instanceIndex = msg.charCodeAt(0), user = null, i, result, option;
+    var instanceIndex = msg[0], user = null, i, result, option;
     msg = msg.substring(1);
     
     if(instanceIndex >= instanceList.length || msg.length === 0) return;
