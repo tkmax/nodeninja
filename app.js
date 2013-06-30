@@ -1,5 +1,5 @@
 // app.js
-var INSTANCE_SIZE = 12;
+var INSTANCE_SIZE = 20;
 
 var Pair = function(key, value) {
   this.key = key;
