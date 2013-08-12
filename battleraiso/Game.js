@@ -11,7 +11,7 @@ Game.split = function (src) {
 }
 
 Game.clear = function (game) {
-    game.se = '';
+    game.sound = '';
     game.state = State.Ready;
     game.phase = '';
     game.active = -1;
@@ -35,7 +35,7 @@ Game.clear = function (game) {
 
 Game.start = function (game) {
     var i, j, tmp;
-    game.se = '';
+    game.sound = '';
     game.state = State.Play;
     game.phase = Phase.Main;
     game.active = 0;
@@ -107,7 +107,7 @@ Game.nextTurn = function (game) {
         game.active = 0;
     }
     game.phase = Phase.Main;
-    game.se = 'end';
+    game.sound = 'end';
 }
 
 Game.isFinish = function (game) {
