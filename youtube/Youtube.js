@@ -1,5 +1,4 @@
-var Instance = require('../Instance')
-    , util = require('util');
+var Instance = require('../Instance');
 
 var Youtube = function () {
     var i;

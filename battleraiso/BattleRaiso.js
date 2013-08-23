@@ -1,5 +1,4 @@
 ﻿var Instance = require('../Instance')
-    , util = require('util')
     , Const = require('./Const')
     , Player = require('./Player')
     , Game = require('./Game')

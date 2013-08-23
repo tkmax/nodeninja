@@ -3,6 +3,7 @@ var WebSocketServer = require('ws').Server
    , Instance = require('./Instance')
    , Youtube = require('./youtube/Youtube')
    , BattleRaiso = require('./battleraiso/BattleRaiso')
+   , Cataso = require('./cataso/Cataso')
    , crypto = require('crypto')
    , server = http.createServer();
 
@@ -13,6 +14,8 @@ var instanceList = [
     ,new Youtube()
     ,new BattleRaiso()
     ,new BattleRaiso()
+    ,new Cataso()
+    ,new Cataso()
 ];
 
 var User = function (ws, uid, trip) {
@@ -190,6 +193,6 @@ wss.on('connection', function (ws) {
 
 server.listen(7911);
 
-process.on('uncaughtException', function (e) {
-    console.log('uncaughtException => ' + e);
-});
+// process.on('uncaughtException', function (e) {
+//     console.log('uncaughtException => ' + e);
+// });
