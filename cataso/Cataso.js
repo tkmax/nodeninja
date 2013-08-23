@@ -155,7 +155,6 @@ Cataso.prototype.onMessage = function (uid, msg) {
                                     }
                                 }
                             }
-                            console.log(JSON.stringify(resource));
                             for (i = 0; i < resource.length; i++) {
                                 if (this.game.resource[i] < resource[i]) {
                                     resource[i] = -1;
