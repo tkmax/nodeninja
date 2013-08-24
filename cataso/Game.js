@@ -13,8 +13,8 @@ var Const = require('./Const')
 
 var Game = function() {}
 
-Game.split = function (src) {
-    return (src.slice(1)).split(' ');
+Game.option = function (msg) {
+    return (msg.slice(1)).split(' ');
 }
 
 Game.clear = function (game) {
