@@ -30,7 +30,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
         if (this.game.state === State.Ready) {
             switch (msg[0]) {
                 case 'b':
-                    for (i in this.game.playerList) {
+                    for (i = 0; i < this.game.playerList.length; i++) {
                         if (this.game.playerList[i].uid === '') {
                             this.game.playerList[i].uid = uid;
                             break;
@@ -38,7 +38,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                     }
                     break;
                 case 'c':
-                    for (i in this.game.playerList) {
+                    for (i = 0; i < this.game.playerList.length; i++) {
                         if (this.game.playerList[i].uid === uid) this.game.playerList[i].uid = '';
                     }
                     break;
@@ -89,9 +89,9 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         foo = parseInt(opt[0]);
                         Game.buildSettlement(this.game, foo);
                         this.game.playerList[this.game.active].secondSettlement = foo;
-                        for (i in TileLink) {
-                            for (j in TileLink[i]) {
-                                if (TileLink[i][j] === foo) Game.produceResource(this.game, this.game.active, this.game.tileList[i], 1);
+                        for (i = 0; i < TileLink.length; i++) {
+                            for (j = 0; j < TileLink[i].length; j++) {
+                                if (TileLink[i][j] === foo) Game.createResource(this.game, this.game.active, this.game.tileList[i], 1);
                             }
                         }
                         this.game.phase = Phase.SetupRoad2;
@@ -137,9 +137,9 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         this.chat('ダイスロール -> ' + foo);
                         if (foo === 7) {
                             for (i = 0; i < this.game.playerList.length; i++) {
-                                if (Player.sumResource(this.game.playerList[i]) >= 8) {
+                                if (Game.sumPlayerResource(this.game, i) >= 8) {
                                     this.chat('バースト発生 -> ' + this.game.playerList[i].uid + '(' + Game.color(i) + ')');
-                                    this.game.playerList[i].burst = Math.floor(Player.sumResource(this.game.playerList[i]) / 2);
+                                    this.game.playerList[i].burst = Math.floor(Game.sumPlayerResource(this.game, i) / 2);
                                     this.game.phase = Phase.Burst;
                                 }
                             }
@@ -148,12 +148,12 @@ Cataso.prototype.onMessage = function (uid, msg) {
                             this.game.sound = 'robber';
                         } else {
                             hoge = [0, 0, 0, 0, 0];
-                            for (i in this.game.numList) {
+                            for (i = 0; i < this.game.numList.length; i++) {
                                 if (
                                     i !== this.game.robber
                                     && this.game.numList[i] === foo
                                 ) {
-                                    for (j in TileLink[i]) {
+                                    for (j = 0; j < TileLink[i].length; j++) {
                                         switch (this.game.settlementList[TileLink[i][j]] & 0xff00) {
                                             case SettlementRank.Settlement:
                                                 hoge[this.game.tileList[i]]++;
@@ -177,13 +177,13 @@ Cataso.prototype.onMessage = function (uid, msg) {
                                     && hoge[this.game.tileList[i]] !== -1
                                     && this.game.numList[i] === foo
                                 ) {
-                                    for (j in TileLink[i]) {
+                                    for (j = 0; j < TileLink[i].length; j++) {
                                         switch (this.game.settlementList[TileLink[i][j]] & 0xff00) {
                                             case SettlementRank.Settlement:
-                                                Game.produceResource(this.game, this.game.settlementList[TileLink[i][j]] & 0x00ff, this.game.tileList[i], 1);
+                                                Game.createResource(this.game, this.game.settlementList[TileLink[i][j]] & 0x00ff, this.game.tileList[i], 1);
                                                 break;
                                             case SettlementRank.City:
-                                                Game.produceResource(this.game, this.game.settlementList[TileLink[i][j]] & 0x00ff, this.game.tileList[i], 2);
+                                                Game.createResource(this.game, this.game.settlementList[TileLink[i][j]] & 0x00ff, this.game.tileList[i], 2);
                                                 break;
                                         }
                                     }
@@ -207,9 +207,9 @@ Cataso.prototype.onMessage = function (uid, msg) {
                             + this.game.playerList[opt[0]].uid + '(' + Game.color(parseInt(opt[0])) + ')'
                         );
                         this.game.playerList[opt[0]].burst--;
-                        Game.consumeResource(this.game, opt[0], opt[1], 1);
+                        Game.destroyResource(this.game, opt[0], opt[1], 1);
                         foo = true;
-                        for (i in this.game.playerList) {
+                        for (i = 0; i < this.game.playerList.length; i++) {
                             if (this.game.playerList[i].burst > 0) {
                                 foo = false;
                                 break;
@@ -226,11 +226,11 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         opt = Game.option(msg);
                         this.game.robber = parseInt(opt[0]);
                         foo = false;
-                        for (i in TileLink[this.game.robber]) {
+                        for (i = 0; i < TileLink[this.game.robber].length; i++) {
                             if (
                                 (this.game.settlementList[TileLink[this.game.robber][i]] & 0xff00) !== SettlementRank.None
                                 && (this.game.settlementList[TileLink[this.game.robber][i]] & 0x00ff) !== this.game.active
-                                && Player.sumResource(this.game.playerList[(this.game.settlementList[TileLink[this.game.robber][i]] & 0x00ff)]) > 0
+                                && Game.sumPlayerResource(this.game, this.game.settlementList[TileLink[this.game.robber][i]] & 0x00ff) > 0
                             ) foo = true;
                         }
                         if (foo) {
@@ -246,7 +246,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && this.game.playerList[this.game.active].uid === uid
                     ) {
                         opt = Game.option(msg);
-                        Game.pillageResource(this.game, opt[0]);
+                        Game.robberResource(this.game, opt[0]);
                         this.chat('資源を１枚略奪 -> ' + this.game.playerList[opt[0]].uid + '(' + Game.color(parseInt(opt[0])) + ')');
                         this.game.phase = Phase.Main;
                     }
@@ -258,8 +258,8 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && this.game.playerList[this.game.active].resource[Resource.Lumber] >= 1
                         && this.game.playerList[this.game.active].road >= 1
                     ) {
-                        Game.consumeResource(this.game, this.game.active, Resource.Brick, 1);
-                        Game.consumeResource(this.game, this.game.active, Resource.Lumber, 1);
+                        Game.destroyResource(this.game, this.game.active, Resource.Brick, 1);
+                        Game.destroyResource(this.game, this.game.active, Resource.Lumber, 1);
                         this.game.phase = Phase.BuildRoad;
                     }
                     break;
@@ -288,10 +288,10 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && this.game.playerList[this.game.active].resource[Resource.Lumber] >= 1
                         && this.game.playerList[this.game.active].settlement >= 1
                     ) {
-                        Game.consumeResource(this.game, this.game.active, Resource.Brick, 1);
-                        Game.consumeResource(this.game, this.game.active, Resource.Wool, 1);
-                        Game.consumeResource(this.game, this.game.active, Resource.Grain, 1);
-                        Game.consumeResource(this.game, this.game.active, Resource.Lumber, 1);
+                        Game.destroyResource(this.game, this.game.active, Resource.Brick, 1);
+                        Game.destroyResource(this.game, this.game.active, Resource.Wool, 1);
+                        Game.destroyResource(this.game, this.game.active, Resource.Grain, 1);
+                        Game.destroyResource(this.game, this.game.active, Resource.Lumber, 1);
                         this.game.phase = Phase.BuildSettlement;
                     }
                     break;
@@ -318,8 +318,8 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && this.game.playerList[this.game.active].resource[Resource.Grain] >= 2
                         && this.game.playerList[this.game.active].city >= 1
                     ) {
-                        Game.consumeResource(this.game, this.game.active, Resource.Ore, 3);
-                        Game.consumeResource(this.game, this.game.active, Resource.Grain, 2);
+                        Game.destroyResource(this.game, this.game.active, Resource.Ore, 3);
+                        Game.destroyResource(this.game, this.game.active, Resource.Grain, 2);
                         this.game.phase = Phase.BuildCity;
                     }
                     break;
@@ -346,9 +346,9 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         foo = this.game.card.shift();
                         if (foo === Card.VictoryPoint) this.game.playerList[this.game.active].bonus++;
                         this.game.playerList[this.game.active].sleepCard[foo]++;
-                        Game.consumeResource(this.game, this.game.active, Resource.Wool, 1);
-                        Game.consumeResource(this.game, this.game.active, Resource.Ore, 1);
-                        Game.consumeResource(this.game, this.game.active, Resource.Grain, 1);
+                        Game.destroyResource(this.game, this.game.active, Resource.Wool, 1);
+                        Game.destroyResource(this.game, this.game.active, Resource.Ore, 1);
+                        Game.destroyResource(this.game, this.game.active, Resource.Grain, 1);
                         this.chat('カードを1枚引きました。');
                     }
                     break;
@@ -356,33 +356,33 @@ Cataso.prototype.onMessage = function (uid, msg) {
                     if (
                         this.game.phase === Phase.Main
                         && this.game.playerList[this.game.active].uid === uid
-                    ) this.game.phase = Phase.DomesticTrade;
+                    ) this.game.phase = Phase.InternationalTrade;
                     break;
                 case 'u':
                     if (
-                        this.game.phase === Phase.DomesticTrade
+                        this.game.phase === Phase.InternationalTrade
                         && this.game.playerList[this.game.active].uid === uid
                     ) this.game.phase = Phase.Main;
                     break;
                 case 'v':
                     if (
-                        this.game.phase === Phase.DomesticTrade
+                        this.game.phase === Phase.InternationalTrade
                         && this.game.playerList[this.game.active].uid === uid
                     ) {
                         opt = Game.option(msg);
-                        foo = '国内貿易(消費) ->';
+                        foo = '海外貿易(出) ->';
                         for (i = 0; i < 5; i++) {
                             if (opt[i] !== '0') {
                                 foo += ' ' + Game.resource(i) + ':' + opt[i];
-                                Game.consumeResource(this.game, this.game.active, i, opt[i]);
+                                Game.destroyResource(this.game, this.game.active, i, parseInt(opt[i]));
                             }
                         }
                         this.chat(foo);
-                        foo = '国内貿易(生産) ->';
+                        foo = '海外貿易(入) ->';
                         for (i = 5; i < 10; i++) {
                             if (opt[i] !== '0') {
                                 foo += ' ' + Game.resource(i - 5) + ':' + opt[i];
-                                Game.produceResource(this.game, this.game.active, i - 5, opt[i]);
+                                Game.createResource(this.game, this.game.active, i - 5, parseInt(opt[i]));
                             }
                         }
                         this.chat(foo);
@@ -393,28 +393,28 @@ Cataso.prototype.onMessage = function (uid, msg) {
                     if (
                         this.game.phase === Phase.Main
                         && this.game.playerList[this.game.active].uid === uid
-                    ) this.game.phase = Phase.InternationalTrade1;
+                    ) this.game.phase = Phase.DomesticTrade1;
                     break;
                 case 'x':
                     if (
-                        this.game.phase === Phase.InternationalTrade1
+                        this.game.phase === Phase.DomesticTrade1
                         && this.game.playerList[this.game.active].uid === uid
                     ) this.game.phase = Phase.Main;
                     break;
                 case 'y':
                     if (
-                        this.game.phase === Phase.InternationalTrade1
+                        this.game.phase === Phase.DomesticTrade1
                         && this.game.playerList[this.game.active].uid === uid
                     ) {
                         opt = Game.option(msg);
-                        this.game.trade.target = parseInt(opt[0]);
-                        this.chat('海外貿易を申し込みました -> ' + this.game.playerList[this.game.trade.target].uid + '(' + Game.color(this.game.trade.target) + ')');
+                        this.game.trade.playerIdx = parseInt(opt[0]);
+                        this.chat('国内貿易を申し込みました -> ' + this.game.playerList[this.game.trade.playerIdx].uid + '(' + Game.color(this.game.trade.playerIdx) + ')');
                         foo = '';
                         for (i = 1; i < 6; i++) {
                             if (opt[i] !== '0') {
                                 foo += ' ' + Game.resource(i - 1) + ':' + opt[i];
                             }
-                            this.game.trade.consume[i - 1] = parseInt(opt[i]);
+                            this.game.trade.destroy[i - 1] = parseInt(opt[i]);
                         }
                         if (foo === '') {
                             this.chat('海外貿易(出) -> なし');
@@ -426,20 +426,20 @@ Cataso.prototype.onMessage = function (uid, msg) {
                             if (opt[i] !== '0') {
                                 foo += ' ' + Game.resource(i - 6) + ':' + opt[i];
                             }
-                            this.game.trade.produce[i - 6] = parseInt(opt[i]);
+                            this.game.trade.create[i - 6] = parseInt(opt[i]);
                         }
                         if (foo === '') {
-                            this.chat('海外貿易(求) -> なし');
+                            this.chat('国内貿易(求) -> なし');
                         } else {
-                            this.chat('海外貿易(求) ->' + foo);
+                            this.chat('国内貿易(求) ->' + foo);
                         }
-                        this.game.phase = Phase.InternationalTrade2;
+                        this.game.phase = Phase.DomesticTrade2;
                     }
                     break;
                 case 'z':
                     if (
-                        this.game.phase === Phase.InternationalTrade2
-                        && this.game.playerList[this.game.trade.target].uid === uid
+                        this.game.phase === Phase.DomesticTrade2
+                        && this.game.playerList[this.game.trade.playerIdx].uid === uid
                     ) {
                         this.chat('拒否されました。');
                         this.game.phase = Phase.Main;
@@ -447,26 +447,24 @@ Cataso.prototype.onMessage = function (uid, msg) {
                     break;
                 case 'A':
                     if (
-                        this.game.phase === Phase.InternationalTrade2
-                        && this.game.playerList[this.game.trade.target].uid === uid
+                        this.game.phase === Phase.DomesticTrade2
+                        && this.game.playerList[this.game.trade.playerIdx].uid === uid
                     ) {
                         opt = Game.option(msg);
                         if (
-                            this.game.playerList[this.game.trade.target].resource[Resource.Brick] >= this.game.trade.produce[Resource.Brick]
-                            && this.game.playerList[this.game.trade.target].resource[Resource.Wool] >= this.game.trade.produce[Resource.Wool]
-                            && this.game.playerList[this.game.trade.target].resource[Resource.Ore] >= this.game.trade.produce[Resource.Ore]
-                            && this.game.playerList[this.game.trade.target].resource[Resource.Grain] >= this.game.trade.produce[Resource.Grain]
-                            && this.game.playerList[this.game.trade.target].resource[Resource.Lumber] >= this.game.trade.produce[Resource.Lumber]
+                            this.game.playerList[this.game.trade.playerIdx].resource[Resource.Brick] >= this.game.trade.create[Resource.Brick]
+                            && this.game.playerList[this.game.trade.playerIdx].resource[Resource.Wool] >= this.game.trade.create[Resource.Wool]
+                            && this.game.playerList[this.game.trade.playerIdx].resource[Resource.Ore] >= this.game.trade.create[Resource.Ore]
+                            && this.game.playerList[this.game.trade.playerIdx].resource[Resource.Grain] >= this.game.trade.create[Resource.Grain]
+                            && this.game.playerList[this.game.trade.playerIdx].resource[Resource.Lumber] >= this.game.trade.create[Resource.Lumber]
                         ) {
                             for (i = 0; i < 5; i++) {
-                                this.game.playerList[this.game.active].resource[i] -= this.game.trade.consume[i];
-                                this.game.playerList[this.game.active].resource[i] += this.game.trade.produce[i];
-                                this.game.playerList[this.game.trade.target].resource[i] += this.game.trade.consume[i];
-                                this.game.playerList[this.game.trade.target].resource[i] -= this.game.trade.produce[i];
+                                Game.huntResource(this.game, this.game.active, this.game.trade.playerIdx, i, this.game.trade.destroy[i]);
+                                Game.huntResource(this.game, this.game.trade.playerIdx, this.game.active, i, this.game.trade.create[i]);
                             }
                             this.chat('交換しました。');
                         } else {
-                            this.chat('** ' + this.game.playerList[this.game.trade.target].uid + '(' + Game.color(this.game.trade.target) + ')の資源不足のため交換できません。 **');
+                            this.chat('** ' + this.game.playerList[this.game.trade.playerIdx].uid + '(' + Game.color(this.game.trade.playerIdx) + ')の資源不足のため交換できません。 **');
                         }
                         this.game.phase = Phase.Main;
                     }
@@ -478,7 +476,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && (this.game.playerList[this.game.active].score + this.game.playerList[this.game.active].bonus) >= 10
                     ) {
                         this.chat('** ' + this.game.playerList[this.game.active].uid + '(' + Game.color(this.game.active) + ')が勝利しました **');
-                        for (i in this.game.playerList) this.game.playerList[i].uid = '';
+                        for (i = 0; i < this.game.playerList.length; i++) this.game.playerList[i].uid = '';
                         this.game.state = State.Ready;
                         this.game.sound = 'finish';
                     }
@@ -504,7 +502,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && !this.game.playerList[this.game.active].isPlayedCard
                         && this.game.playerList[this.game.active].wakeCard[Card.Soldier] > 0
                     ) {
-                        Player.playCard(this.game.playerList[this.game.active], Card.Soldier);
+                        Game.playCard(this.game, Card.Soldier);
                         if (this.game.largestArmy === -1) {
                             if (this.game.playerList[this.game.active].deadCard[Card.Soldier] >= 3) {
                                 this.game.largestArmy = this.game.active;
@@ -531,11 +529,11 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         opt = Game.option(msg);
                         this.game.robber = parseInt(opt[0]);
                         foo = false;
-                        for (i in TileLink[this.game.robber]) {
+                        for (i = 0; i < TileLink[this.game.robber].length; i++) {
                             if (
                                 (this.game.settlementList[TileLink[this.game.robber][i]] & 0xff00) !== SettlementRank.None
                                 && (this.game.settlementList[TileLink[this.game.robber][i]] & 0x00ff) !== this.game.active
-                                && Player.sumResource(this.game.playerList[(this.game.settlementList[TileLink[this.game.robber][i]] & 0x00ff)]) > 0
+                                && Game.sumPlayerResource(this.game, this.game.settlementList[TileLink[this.game.robber][i]] & 0x00ff) > 0
                             ) {
                                 foo = true;
                             }
@@ -557,7 +555,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && this.game.playerList[this.game.active].uid === uid
                     ) {
                         opt = Game.option(msg);
-                        Game.pillageResource(this.game, opt[0]);
+                        Game.robberResource(this.game, opt[0]);
                         this.chat('資源を１枚略奪 -> ' + this.game.playerList[opt[0]].uid + '(' + Game.color(parseInt(opt[0])) + ')');
                         if (this.game.dice1 === 0) {
                             this.game.phase = Phase.DiceRoll;
@@ -573,7 +571,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && !this.game.playerList[this.game.active].isPlayedCard
                         && this.game.playerList[this.game.active].wakeCard[Card.RoadBuilding] > 0
                     ) {
-                        Player.playCard(this.game.playerList[this.game.active], Card.RoadBuilding);
+                        Game.playCard(this.game, Card.RoadBuilding);
                         this.game.phase = Phase.RoadBuilding1;
                     }
                     break;
@@ -621,7 +619,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && this.game.playerList[this.game.active].wakeCard[Card.YearOfPlenty] > 0
                         && Game.sumResource(this.game) > 0
                     ) {
-                        Player.playCard(this.game.playerList[this.game.active], Card.YearOfPlenty);
+                        Game.playCard(this.game, Card.YearOfPlenty);
                         this.game.phase = Phase.YearOfPlenty1;
                     }
                     break;
@@ -632,7 +630,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && this.game.playerList[this.game.active].uid === uid
                         && this.game.resource[opt[0]] > 0
                     ) {
-                        Game.produceResource(this.game, this.game.active, opt[0], 1);
+                        Game.createResource(this.game, this.game.active, opt[0], 1);
                         this.chat(Game.resource(parseInt(opt[0])) + 'を生産しました。');
                         if (Game.sumResource(this.game) > 0) {
                             this.game.phase = Phase.YearOfPlenty2;
@@ -652,7 +650,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && this.game.playerList[this.game.active].uid === uid
                         && this.game.resource[opt[0]] > 0
                     ) {
-                        Game.produceResource(this.game, this.game.active, opt[0], 1);
+                        Game.createResource(this.game, this.game.active, opt[0], 1);
                         this.chat(Game.resource(parseInt(opt[0])) + 'を生産しました。');
                         if (this.game.dice1 === 0) {
                             this.game.phase = Phase.DiceRoll;
@@ -668,7 +666,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && !this.game.playerList[this.game.active].isPlayedCard
                         && this.game.playerList[this.game.active].wakeCard[Card.Monopoly] > 0
                     ) {
-                        Player.playCard(this.game.playerList[this.game.active], Card.Monopoly);
+                        Game.playCard(this.game, Card.Monopoly);
                         this.game.phase = Phase.Monopoly;
                     }
                     break;
