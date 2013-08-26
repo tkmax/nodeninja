@@ -417,9 +417,9 @@ Cataso.prototype.onMessage = function (uid, msg) {
                             this.game.trade.destroy[i - 1] = parseInt(opt[i]);
                         }
                         if (foo === '') {
-                            this.chat('海外貿易(出) -> なし');
+                            this.chat('国内貿易(出) -> なし');
                         } else {
-                            this.chat('海外貿易(出) ->' + foo);
+                            this.chat('国内貿易(出) ->' + foo);
                         }
                         foo = '';
                         for (i = 6; i < 11; i++) {
