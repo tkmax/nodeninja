@@ -508,6 +508,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                                 this.game.largestArmy = this.game.active;
                                 this.game.playerList[this.game.active].bonus += 2;
                                 this.chat('** ' + this.game.playerList[this.game.active].uid + '(' + Game.color(this.game.active) + ')' + 'が騎士賞を獲得しました **');
+                                game.sound = 'get';
                             }
                         } else if (
                             this.game.largestArmy !== this.game.active
@@ -517,6 +518,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                             this.game.largestArmy = this.game.active;
                             this.game.playerList[this.game.active].bonus += 2;
                             this.chat('** ' + this.game.playerList[this.game.active].uid + '(' + Game.color(this.game.active) + ')' + 'が騎士賞を獲得しました **');
+                            game.sound = 'get';
                         }
                         this.game.phase = Phase.Soldier1;
                     }
@@ -582,7 +584,12 @@ Cataso.prototype.onMessage = function (uid, msg) {
                     ) {
                         opt = Game.option(msg);
                         foo = Game.buildRoad(this.game, opt[0]);
-                        if (foo !== -1) this.chat('** ' + this.game.playerList[foo].uid + '(' + Game.color(foo) + ')' + 'が道賞を獲得しました **');
+                        if (foo !== -1) {
+                            this.chat('** ' + this.game.playerList[foo].uid + '(' + Game.color(foo) + ')' + 'が道賞を獲得しました **');
+                            this.game.sound = 'get';
+                        } else {
+                            this.game.sound = 'build';
+                        }
                         if (Game.canBuildRoads(this.game)) {
                             this.game.phase = Phase.RoadBuilding2;
                         } else {
@@ -592,7 +599,6 @@ Cataso.prototype.onMessage = function (uid, msg) {
                                 this.game.phase = Phase.Main;
                             }
                         }
-                        this.game.sound = 'build';
                     }
                     break;
                 case 'I':
@@ -602,13 +608,17 @@ Cataso.prototype.onMessage = function (uid, msg) {
                     ) {
                         opt = Game.option(msg);
                         foo = Game.buildRoad(this.game, opt[0]);
-                        if (foo !== -1) this.chat('** ' + this.game.playerList[foo].uid + '(' + Game.color(foo) + ')' + 'が道賞を獲得しました **');
+                        if (foo !== -1) {
+                            this.chat('** ' + this.game.playerList[foo].uid + '(' + Game.color(foo) + ')' + 'が道賞を獲得しました **');
+                            this.game.sound = 'get';
+                        } else {
+                            this.game.sound = 'build';
+                        }
                         if (this.game.dice1 === 0) {
                             this.game.phase = Phase.DiceRoll;
                         } else {
                             this.game.phase = Phase.Main;
                         }
-                        this.game.sound = 'build';
                     }
                     break;
                 case 'J':

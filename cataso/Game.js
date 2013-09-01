@@ -379,14 +379,17 @@ Game.robberResource = function (game, playerIdx) {
     Game.huntResource(game, playerIdx, game.active, type, 1);
 }
 
-Game.canBuildRoad = function (game, playerIdx) {
+Game.canBuildRoad = function (game, pt) {
     var i, j;
 
-    if (game.roadList[playerIdx] === -1) {
-        for (i = 0; i < RoadLink[playerIdx].length; i++) {
-            if ((game.settlementList[RoadLink[playerIdx][i]] & 0x00ff) === game.active) return true;
-            for (j = 0; j < SettlementLink[RoadLink[playerIdx][i]].length; j++) {
-                if (game.roadList[SettlementLink[RoadLink[playerIdx][i]][j]] === game.active) return true;
+    if (game.roadList[pt] === -1) {
+        for (i = 0; i < RoadLink[pt].length; i++) {
+            if ((game.settlementList[RoadLink[pt][i]] & 0x00ff) === game.active) {
+                return true;
+            } else if ((game.settlementList[RoadLink[pt][i]] & 0xff00) === SettlementRank.None) {
+                for (j = 0; j < SettlementLink[RoadLink[pt][i]].length; j++) {
+                    if (game.roadList[SettlementLink[RoadLink[pt][i]][j]] === game.active) return true;
+                }
             }
         }
     }
