@@ -508,7 +508,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                                 this.game.largestArmy = this.game.active;
                                 this.game.playerList[this.game.active].bonus += 2;
                                 this.chat('** ' + this.game.playerList[this.game.active].uid + '(' + Game.color(this.game.active) + ')' + 'が騎士賞を獲得しました **');
-                                game.sound = 'get';
+                                this.game.sound = 'get';
                             }
                         } else if (
                             this.game.largestArmy !== this.game.active
@@ -518,7 +518,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                             this.game.largestArmy = this.game.active;
                             this.game.playerList[this.game.active].bonus += 2;
                             this.chat('** ' + this.game.playerList[this.game.active].uid + '(' + Game.color(this.game.active) + ')' + 'が騎士賞を獲得しました **');
-                            game.sound = 'get';
+                            this.game.sound = 'get';
                         }
                         this.game.phase = Phase.Soldier1;
                     }
