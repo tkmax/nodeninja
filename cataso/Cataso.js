@@ -121,18 +121,20 @@ Cataso.prototype.onMessage = function (uid, msg) {
                     ) {
                         foo = [1, 6, 2, 5, 3, 4, 4, 3, 5, 2, 6, 1];
                         bar = [];
-                        while (foo.length > 0) {
-                            i = Math.floor(Math.random() * foo.length);
-                            bar.push(foo[i]);
-                            foo.splice(i, 1);
+                        for (i = 0; i < 3; i++) {
+                            while (foo.length > 0) {
+                                j = Math.floor(Math.random() * foo.length);
+                                bar.push(foo[j]);
+                                foo.splice(j, 1);
+                            }
+                            while (bar.length > 0) {
+                                j = Math.floor(Math.random() * bar.length);
+                                foo.push(bar[j]);
+                                bar.splice(j, 1);
+                            }
                         }
-                        while (bar.length > 0) {
-                            i = Math.floor(Math.random() * bar.length);
-                            foo.push(bar[i]);
-                            bar.splice(i, 1);
-                        }
-                        this.game.dice1 = foo[4];
-                        this.game.dice2 = foo[7];
+                        this.game.dice1 = foo[Math.random() * foo.length];
+                        this.game.dice2 = foo[Math.random() * foo.length];
                         foo = this.game.dice1 + this.game.dice2;
                         this.chat('ダイスロール -> ' + foo);
                         if (foo === 7) {
