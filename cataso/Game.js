@@ -371,12 +371,23 @@ Game.huntResource = function (game, fromIdx, toIdx, type, size) {
 }
 
 Game.robberResource = function (game, playerIdx) {
-    var type;
+    var i, j, foo = [], bar = [];
 
-    do {
-        type = Math.floor(Math.random() * 5);
-    } while (game.playerList[playerIdx].resource[type] <= 0);
-    Game.huntResource(game, playerIdx, game.active, type, 1);
+    for (i = 0; i < 5; i++) {
+        for (j = 0; j < game.playerList[playerIdx].resource[i]; j++) foo.push(i);
+    }
+    while (foo.length > 0) {
+        i = Math.floor(Math.random() * foo.length);
+        bar.push(foo[i]);
+        foo.splice(i, 1);
+    }
+    while (bar.length > 0) {
+        i = Math.floor(Math.random() * bar.length);
+        foo.push(bar[i]);
+        bar.splice(i, 1);
+    }
+    i = Math.floor(Math.random() * foo.length);
+    Game.huntResource(game, playerIdx, game.active, foo[i], 1);
 }
 
 Game.canBuildRoad = function (game, pt) {
