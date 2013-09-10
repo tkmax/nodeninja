@@ -119,10 +119,9 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         this.game.phase === Phase.DiceRoll
                         && this.game.playerList[this.game.active].uid === uid
                     ) {
-                        foo = [];
-                        for (i = 0; i < 100; i++) foo.push(Math.floor(Math.random() * 6) + 1);
-                        this.game.dice1 = foo[Math.floor(Math.random() * foo.length)];
-                        this.game.dice2 = foo[Math.floor(Math.random() * foo.length)];
+                        i = Math.floor(Math.random() * this.game.dice.length);
+                        this.game.dice1 = this.game.dice[i][0];
+                        this.game.dice2 = this.game.dice[i][1];
                         foo = (this.game.dice1 + this.game.dice2);
                         this.chat('ダイスロール -> ' + foo);
                         if (foo === 7) {

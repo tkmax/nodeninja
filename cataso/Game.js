@@ -47,10 +47,11 @@ Game.clear = function (game) {
     for (i = 0; i < 54; i++) game.settlementList.push(SettlementRank.None | 0x00ff);
     game.roadList = [];
     for (i = 0; i < 72; i++) game.roadList.push(-1);
+    game.dice = [];
 }
 
 Game.start = function (game) {
-    var i, tmp;
+    var i, j, tmp;
 
     game.state = State.Play;
     game.sound = '';
@@ -125,6 +126,20 @@ Game.start = function (game) {
     }
     for (i = 0; i < game.resource.length; i++) game.resource[i] = 19;
     for (i = 0; i < game.playerList.length; i++) Player.start(game.playerList[i]);
+    game.dice.length = 0;
+    for (i = 1; i <= 6; i++) {
+        for (j = 1; j <= 6; j++) game.dice.push([i, j]);
+    }
+    while (game.dice.length > 0) {
+        i = Math.floor(Math.random() * game.dice.length);
+        tmp.push(game.dice[i]);
+        game.dice.splice(i, 1);
+    }
+    while (tmp.length > 0) {
+        i = Math.floor(Math.random() * tmp.length);
+        game.dice.push(tmp[i]);
+        tmp.splice(i, 1);
+    }
 }
 
 Game.createNumList = function (tileList) {
