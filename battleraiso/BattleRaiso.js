@@ -54,6 +54,7 @@ BattleRaiso.prototype.onMessage = function (uid, msg) {
                     this.chat((parseInt(optn[0]) + 1) + '列目の旗を獲得しました。');
                     this.game.flagList[optn[0]] = this.game.active;
                     if (Game.isFinish(this.game)) {
+                        this.game.sound = 'finish';
                         if (this.game.active === 0) {
                             this.chat("おめでとうございます。" + this.game.playerList[0].uid + "さん(青)の勝利です。");
                         } else {
