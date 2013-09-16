@@ -47,7 +47,11 @@ Game.clear = function (game) {
     for (i = 0; i < 54; i++) game.settlementList.push(SettlementRank.None | 0x00ff);
     game.roadList = [];
     for (i = 0; i < 72; i++) game.roadList.push(-1);
-    game.dice = [];
+    game.diceReel = [];
+    for (i = 0; i < 30; i++) {
+        for (j = 6; j >= 1; j--) game.diceReel.push(j);
+    }
+    game.diceIdx = 0;
 }
 
 Game.start = function (game) {
@@ -126,20 +130,17 @@ Game.start = function (game) {
     }
     for (i = 0; i < game.resource.length; i++) game.resource[i] = 19;
     for (i = 0; i < game.playerList.length; i++) Player.start(game.playerList[i]);
-    game.dice.length = 0;
-    for (i = 1; i <= 6; i++) {
-        for (j = 1; j <= 6; j++) game.dice.push([i, j]);
-    }
-    while (game.dice.length > 0) {
-        i = Math.floor(Math.random() * game.dice.length);
-        tmp.push(game.dice[i]);
-        game.dice.splice(i, 1);
+    while (game.diceReel.length > 0) {
+        i = Math.floor(Math.random() * game.diceReel.length);
+        tmp.push(game.diceReel[i]);
+        game.diceReel.splice(i, 1);
     }
     while (tmp.length > 0) {
         i = Math.floor(Math.random() * tmp.length);
-        game.dice.push(tmp[i]);
+        game.diceReel.push(tmp[i]);
         tmp.splice(i, 1);
     }
+    game.diceIdx = 0;
 }
 
 Game.createNumList = function (tileList) {
