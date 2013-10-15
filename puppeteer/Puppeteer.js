@@ -75,6 +75,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                             );
                             Game.openTurn(this.game);
                         }
+                        this.game.sound = 'end';
                     }
                     break;
                 case 'f':
@@ -120,6 +121,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                             if (this.game.isFirst) this.game.isFirst = false;
                             this.game.phase = Phase.Main;
                         }
+                        this.game.sound = 'dice';
                     }
                     break;
                 case 'h':
@@ -132,6 +134,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                         this.game.canDrawCard = false;
                         this.game.canGet2Coin = false;
                         if (this.game.isFirst) this.game.isFirst = false;
+                        this.game.sound = 'get';
                     }
                     break;
                 case 'i':
@@ -183,6 +186,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                         this.game.buildCount--;
                         if (this.game.isFirst) this.game.isFirst = false;
                         this.game.phase = Phase.Main;
+                        this.game.sound = 'build';
                     }
                     break;
                 case 'k':
@@ -210,16 +214,18 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                                 this.chat('【!】盗賊によってコインを盗まれました。');
                             }
                             Game.openTurn(this.game);
+                            this.game.sound = 'end';
                         } else {
                             if (this.game.firstFinish === -1) {
                                 if (this.game.job[Job.King] > 0) {
                                     this.game.king = this.game.job[Job.King];
                                     this.chat(
-                                    '【!】' + this.game.playerList[this.game.king].uid
-                                    + '(' + Game.color(this.game.king) + ')' + 'が王冠を獲得しました。'
-                                );
+                                        '【!】' + this.game.playerList[this.game.king].uid
+                                        + '(' + Game.color(this.game.king) + ')' + 'が王冠を獲得しました。'
+                                    );
                                 }
                                 Game.nextRound(this.game);
+                                this.game.sound = 'end';
                             } else {
                                 foo = [0];
                                 bar = Game.score(this.game, foo);
@@ -248,7 +254,8 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                                     );
                                 }
                                 for (i = 0; i < 5; i++) this.game.playerList[i].uid = '';
-                                this.game.state = State.Ready
+                                this.game.sound = 'finish';
+                                this.game.state = State.Ready;
                             }
                         }
                     }
@@ -275,6 +282,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                         this.game.canKill = false;
                         if (this.game.isFirst) this.game.isFirst = false;
                         this.game.phase = Phase.Main;
+                        this.game.sound = 'robber';
                     }
                     break;
                 case 'n':
@@ -299,6 +307,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                         this.game.canSteal = false;
                         if (this.game.isFirst) this.game.isFirst = false;
                         this.game.phase = Phase.Main;
+                        this.game.sound = 'robber';
                     }
                     break;
                 case 'p':
@@ -328,6 +337,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                         );
                         if (this.game.isFirst) this.game.isFirst = false;
                         this.game.phase = Phase.Main;
+                        this.game.sound = 'robber';
                     }
                     break;
                 case 'r':
@@ -373,6 +383,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                         this.game.canReplace = false;
                         if (this.game.isFirst) this.game.isFirst = false;
                         this.game.phase = Phase.Main;
+                        this.game.sound = 'dice';
                     }
                     break;
                 case 'u':
@@ -393,6 +404,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                         this.game.playerList[this.game.active].coin += foo;
                         this.game.canYellowCoin = false;
                         if (this.game.isFirst) this.game.isFirst = false;
+                        this.game.sound = 'get';
                     }
                     break;
                 case 'v':
@@ -413,6 +425,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                         this.game.playerList[this.game.active].coin += foo;
                         this.game.canBlueCoin = false;
                         if (this.game.isFirst) this.game.isFirst = false;
+                        this.game.sound = 'get';
                     }
                     break;
                 case 'w':
@@ -426,6 +439,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                         this.game.playerList[this.game.active].coin += 1;
                         this.game.canGet1Coin = false;
                         if (this.game.isFirst) this.game.isFirst = false;
+                        this.game.sound = 'get';
                     }
                     break;
                 case 'x':
@@ -446,6 +460,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                         this.game.playerList[this.game.active].coin += foo;
                         this.game.canGreenCoin = false;
                         if (this.game.isFirst) this.game.isFirst = false;
+                        this.game.sound = 'get';
                     }
                     break;
                 case 'y':
@@ -460,6 +475,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                         this.game.playerList[this.game.active].hand.push(this.game.deck.shift());
                         this.game.canDraw2Cards = false;
                         if (this.game.isFirst) this.game.isFirst = false;
+                        this.game.sound = 'dice';
                     }
                     break;
                 case 'z':
@@ -517,6 +533,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                             this.game.cemeteryCard = -1;
                             this.game.phase = Phase.Main;
                         }
+                        this.game.sound = 'robber';
                     }
                     break;
                 case 'B':
@@ -537,6 +554,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                         this.game.playerList[this.game.active].coin += foo;
                         this.game.canRedCoin = false;
                         if (this.game.isFirst) this.game.isFirst = false;
+                        this.game.sound = 'get';
                     }
                     break;
                 case 'C':
@@ -596,6 +614,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                         this.game.canLabo = false;
                         if (this.game.isFirst) this.game.isFirst = false;
                         this.game.phase = Phase.Main;
+                        this.game.sound = 'get';
                     }
                     break;
                 case 'G':
