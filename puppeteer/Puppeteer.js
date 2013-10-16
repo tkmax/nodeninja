@@ -217,7 +217,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                             this.game.sound = 'end';
                         } else {
                             if (this.game.firstFinish === -1) {
-                                if (this.game.job[Job.King] > 0) {
+                                if (this.game.job[Job.King] >= 0) {
                                     this.game.king = this.game.job[Job.King];
                                     this.chat(
                                         '【!】' + this.game.playerList[this.game.king].uid
