@@ -9,12 +9,16 @@ var WebSocketServer = require('ws').Server
    , server = http.createServer();
 
 var instanceList = [
-    new Youtube()
-    , new Youtube()
-    , new Puppeteer()
-    , new Puppeteer()
+    new BattleRaiso()
     , new BattleRaiso()
     , new BattleRaiso()
+    , new BattleRaiso()
+    , new Puppeteer()
+    , new Puppeteer()
+    , new Puppeteer()
+    , new Puppeteer()
+    , new Cataso()
+    , new Cataso()
     , new Cataso()
     , new Cataso()
 ];
@@ -194,8 +198,6 @@ wss.on('connection', function (ws) {
 
 server.listen(7911);
 
-/**
 process.on('uncaughtException', function (e) {
      console.log('uncaughtException => ' + e);
 });
-**/
