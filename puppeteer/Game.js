@@ -294,7 +294,7 @@ Game.score = function (game, playerIdx) {
         }
     }
 
-    return {score:score, bonus:bonus};
+    return { 'score': score, 'bonus': bonus };
 }
 
 Game.job = function (type) {

@@ -10,6 +10,7 @@ var Instance = require('../Instance')
 
 var Puppeteer = function () {
     this.super();
+    this.title = 'パペッティア';
     this.game = new Game();
     Game.clear(this.game);
 };
@@ -228,7 +229,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                                 this.game.sound = 'end';
                             } else {
                                 foo = [0];
-                                bar = Game.score(this.game, foo);
+                                bar = Game.score(this.game, 0);
                                 for (i = 1; i < 5; i++) {
                                     hoge = Game.score(this.game, i);
                                     if ((bar.score + bar.bonus) < (hoge.score + hoge.bonus)) {
