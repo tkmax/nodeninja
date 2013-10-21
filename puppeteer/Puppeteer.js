@@ -246,12 +246,11 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
                                         }
                                     }
                                 }
-                                this.chat('*** おめでとうございます。 ***');
+                                this.chat('** おめでとうございます。 **');
                                 for (i = 0; i < foo.length; i++) {
                                     this.chat(
                                         this.game.playerList[foo[i]].uid
-                                        + '(' + Game.color(foo[i]) + ')'
-                                        + 'の勝利です。'
+                                        + '(' + Game.color(foo[i]) + ')の勝利です。'
                                     );
                                 }
                                 for (i = 0; i < 5; i++) this.game.playerList[i].uid = '';

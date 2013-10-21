@@ -15,6 +15,7 @@ var Instance = require('../Instance')
 
 var Cataso = function () {
     this.super();
+    this.title = 'カタソ';
     this.game = new Game();
     Game.clear(this.game);
 };

@@ -8,6 +8,7 @@
 
 var BattleRaiso = function () {
     this.super();
+    this.title = 'バトルライソ';
     this.game = new Game();
     Game.clear(this.game);
 };
