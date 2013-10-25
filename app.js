@@ -4,7 +4,7 @@ var WebSocketServer = require('ws').Server
    , Youtube = require('./youtube/Youtube')
    , BattleRaiso = require('./battleraiso/BattleRaiso')
    , Cataso = require('./cataso/Cataso')
-   , Puppeteer = require('./puppeteer/Puppeteer')
+   , AyatsuriNingen = require('./ayatsuriningen/AyatsuriNingen')
    , crypto = require('crypto')
    , server = http.createServer();
 
@@ -13,10 +13,10 @@ var instanceList = [
     , new BattleRaiso()
     , new BattleRaiso()
     , new BattleRaiso()
-    , new Puppeteer()
-    , new Puppeteer()
-    , new Puppeteer()
-    , new Puppeteer()
+    , new AyatsuriNingen()
+    , new AyatsuriNingen()
+    , new AyatsuriNingen()
+    , new AyatsuriNingen()
     , new Cataso()
     , new Cataso()
     , new Cataso()

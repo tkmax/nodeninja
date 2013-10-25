@@ -8,16 +8,16 @@ var Instance = require('../Instance')
     , Card = Const.Card
     , Job = Const.Job;
 
-var Puppeteer = function () {
+var AyatsuriNingen = function () {
     this.super();
-    this.title = 'パペッティア';
+    this.title = '操り人間';
     this.game = new Game();
     Game.clear(this.game);
 };
 
-Puppeteer.prototype = new Instance();
+AyatsuriNingen.prototype = new Instance();
 
-Puppeteer.prototype.onMessage = function (uid, msg) {
+AyatsuriNingen.prototype.onMessage = function (uid, msg) {
     var i, j, hoge, foo, bar;
 
     if (msg[0] === 'a') {
@@ -638,7 +638,7 @@ Puppeteer.prototype.onMessage = function (uid, msg) {
     }
 }
 
-Puppeteer.prototype.onCommand = function (uid, msg) {
+AyatsuriNingen.prototype.onCommand = function (uid, msg) {
     this.basicCommand(uid, msg);
     switch (msg[0]) {
         case '/reset':
@@ -653,4 +653,4 @@ Puppeteer.prototype.onCommand = function (uid, msg) {
     }
 }
 
-module.exports = Puppeteer;
+module.exports = AyatsuriNingen;
