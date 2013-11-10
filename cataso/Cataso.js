@@ -48,7 +48,6 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         this.game.playerList[0].uid !== ''
                         && this.game.playerList[1].uid !== ''
                         && this.game.playerList[2].uid !== ''
-                        && this.game.playerList[3].uid !== ''
                     ) Game.start(this.game);
                     break;
             }
@@ -72,7 +71,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                     ) {
                         opt = Game.option(msg);
                         Game.buildRoad(this.game, opt[0]);
-                        if (this.game.active < 3) {
+                        if (this.game.active < this.game.playerNumber - 1) {
                             this.game.phase = Phase.SetupSettlement1;
                             this.game.active++;
                         } else {
@@ -271,7 +270,8 @@ Cataso.prototype.onMessage = function (uid, msg) {
                     break;
                 case 'o':
                     if (
-                        this.game.phase === Phase.Main && this.game.playerList[this.game.active].uid === uid
+                        this.game.phase === Phase.Main
+                        && this.game.playerList[this.game.active].uid === uid
                         && this.game.playerList[this.game.active].resource[Resource.Brick] >= 1
                         && this.game.playerList[this.game.active].resource[Resource.Wool] >= 1
                         && this.game.playerList[this.game.active].resource[Resource.Grain] >= 1
@@ -466,13 +466,17 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && (this.game.playerList[this.game.active].score + this.game.playerList[this.game.active].bonus) >= 10
                     ) {
                         this.chat('** ' + this.game.playerList[this.game.active].uid + '(' + Game.color(this.game.active) + ')が勝利しました **');
-                        for (i = 0; i < this.game.playerList.length; i++) this.game.playerList[i].uid = '';
+                        for (i = 0; i < this.game.playerNumber; i++) this.game.playerList[i].uid = '';
+                        this.game.playerNumber = 4;
                         this.game.state = State.Ready;
                         this.game.sound = 'finish';
                     }
                     break;
                 case 'C':
-                    if (this.game.phase === Phase.Main && this.game.playerList[this.game.active].uid === uid) {
+                    if (
+                        this.game.phase === Phase.Main
+                        && this.game.playerList[this.game.active].uid === uid
+                    ) {
                         for (i = 0; i < 5; i++) {
                             this.game.playerList[this.game.active].wakeCard[i] += this.game.playerList[this.game.active].sleepCard[i];
                             this.game.playerList[this.game.active].sleepCard[i] = 0;
@@ -480,7 +484,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         this.game.playerList[this.game.active].isPlayedCard = false;
                         this.game.dice1 = 0;
                         this.game.dice2 = 0;
-                        this.game.active = (this.game.active + 1) % 4;
+                        this.game.active = (this.game.active + 1) % this.game.playerNumber;
                         this.game.phase = Phase.DiceRoll;
                         this.game.sound = 'end';
                     }
@@ -697,14 +701,14 @@ Cataso.prototype.onMessage = function (uid, msg) {
     }
 }
 
-Cataso.prototype.onCommand = function (uid, msg) {
-    this.basicCommand(uid, msg);
+Cataso.prototype.onCommand = function (user, msg) {
+    this.basicCommand(user, msg);
     switch (msg[0]) {
         case '/reset':
-            if (this.ctrlr.uid === uid) {
+            if (this.ctrlr !== null && this.ctrlr.uid === user.uid) {
                 Game.clear(this.game);
                 this.broadcast(JSON.stringify(this.game));
-                this.chat('リセットしました。');
+                this.chat('ゲームをリセットしました。');
             } else {
                 this.chat('管理者でないためリセットできません。');
             }

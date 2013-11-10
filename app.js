@@ -1,12 +1,11 @@
 var WebSocketServer = require('ws').Server
    , http = require('http')
+   , server = http.createServer()
+   , crypto = require('crypto')
    , Instance = require('./Instance')
-   , Youtube = require('./youtube/Youtube')
    , BattleRaiso = require('./battleraiso/BattleRaiso')
    , Cataso = require('./cataso/Cataso')
-   , AyatsuriNingen = require('./ayatsuriningen/AyatsuriNingen')
-   , crypto = require('crypto')
-   , server = http.createServer();
+   , AyatsuriNingen = require('./ayatsuriningen/AyatsuriNingen');
 
 var instanceList = [
     new BattleRaiso()
@@ -42,13 +41,12 @@ var splitForSyntax2 = function (src) {
 var sendUserList = function (instanceIdx, ws) {
     var result = '', i;
 
-    for (i in instanceList[instanceIdx].userList) {
-        if (i !== '0') result += ' ';
-        if (instanceList[instanceIdx].userList[i].trip !== '') {
+    for (i = 0; i < instanceList[instanceIdx].userList.length; i++) {
+        if (i > 0) result += ' ';
+        if (instanceList[instanceIdx].userList[i].trip !== '')
             result += instanceList[instanceIdx].userList[i].uid + '%' + instanceList[instanceIdx].userList[i].trip;
-        } else {
+        else
             result += instanceList[instanceIdx].userList[i].uid;
-        }
     }
 
     try {
@@ -67,48 +65,50 @@ var createTrip = function (src) {
 }
 
 var login = function (instanceIdx, ws, msg) {
-    var tmp, uid, src = null, user, trip = '', i, isSuccessful = false, result;
+    var tmp, uid, src, user, trip, i, isSuccessful, result;
 
     tmp = (splitForSyntax1(msg)).split('#', 2);
     uid = tmp[0];
     if (tmp.length > 1) src = tmp[1];
 
-    if (uid.length > 0
-    && uid !== 'UNKNOWN'
-    && uid.match(/^[0-9A-Za-z]{1,12}$/)
+    if (
+        uid.length > 0
+        && uid !== 'UNKNOWN'
+        && uid.match(/^[0-9A-Za-z]{1,12}$/)
     ) {
         user = null;
-        for (i in instanceList[instanceIdx].userList) {
+        for (i = 0; i < instanceList[instanceIdx].userList.length; i++) {
             if (uid === instanceList[instanceIdx].userList[i].uid) {
                 user = instanceList[instanceIdx].userList[i];
                 break;
             }
         }
-        if (user === null) isSuccessful = true;
+        if (user === null)
+            isSuccessful = true;
+        else
+            isSuccessful = false;
     }
     if (isSuccessful) {
         try {
-            if (src !== null) trip = createTrip(src);
-            if (trip !== '') {
+            if (src)
+                trip = createTrip(src);
+            else
+                trip = '';
+            if (trip !== '')
                 ws.send('C' + uid + '%' + trip);
-            } else {
+            else
                 ws.send('C' + uid);
-            }
             sendUserList(instanceIdx, ws);
             user = new User(ws, uid, trip);
             instanceList[instanceIdx].userList.push(user);
-            if (user.trip !== '') {
+            if (user.trip !== '')
                 instanceList[instanceIdx]._broadcast('E' + user.uid + '%' + user.trip);
-            } else {
+            else
                 instanceList[instanceIdx]._broadcast('E' + user.uid);
-            }
-            if (instanceList[instanceIdx].ctrlr === null) {
-                instanceList[instanceIdx].ctrlr = user;
-            }
-            if (instanceList[instanceIdx].ctrlr.trip !== '') {
-                instanceList[instanceIdx]._unicast(user, 'I' + instanceList[instanceIdx].ctrlr.uid + '%' + instanceList[instanceIdx].ctrlr.trip);
-            } else {
-                instanceList[instanceIdx]._unicast(user, 'I' + instanceList[instanceIdx].ctrlr.uid);
+
+            if (instanceList[instanceIdx].ctrlr !== null) {
+                console.log(instanceList[instanceIdx].ctrlr.uid);
+                ws.send('I' + instanceList[instanceIdx].ctrlr.uid);
             }
         } catch (e) {
         }
@@ -127,8 +127,8 @@ wss.on('connection', function (ws) {
     ws.on('close', function (msg) {
         var instanceIdx, i, user = null;
 
-        for (instanceIdx in instanceList) {
-            for (i in instanceList[instanceIdx].userList) {
+        for (instanceIdx = 0; instanceIdx < instanceList.length; instanceIdx++) {
+            for (i = 0; i < instanceList[instanceIdx].userList.length; i++) {
                 if (ws === instanceList[instanceIdx].userList[i].ws) {
                     user = instanceList[instanceIdx].userList[i];
                     instanceList[instanceIdx].removeUser(user);
@@ -159,9 +159,8 @@ wss.on('connection', function (ws) {
             switch (msg[0]) {
                 case 'a':
                     result = [];
-                    for (i in instanceList) {
-                        result.push({index:parseInt(i), title:instanceList[i].title, count:instanceList[i].userList.length});
-                    }
+                    for (i = 0; i < instanceList.length; i++)
+                        result.push({ index: parseInt(i), title: instanceList[i].title, count: instanceList[i].userList.length });
                     try {
                         ws.send('A' + JSON.stringify(result));
                     } catch (e) {
@@ -182,9 +181,7 @@ wss.on('connection', function (ws) {
                 case 'e':
                     option = splitForSyntax1(msg);
                     instanceList[instanceIdx]._broadcast('H' + user.uid + ' ' + (option.split('<').join('&lt;')).split('>').join('&gt;'));
-                    if (option[0] === '/' && option.length > 1) {
-                        instanceList[instanceIdx].onCommand(user.uid, option.split(' '));
-                    }
+                    if (option.length > 1 && option[0] === '/') instanceList[instanceIdx].onCommand(user, option.split(' '));
                     break;
                 case 'f':
                     option = splitForSyntax1(msg);

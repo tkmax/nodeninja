@@ -638,14 +638,14 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
     }
 }
 
-AyatsuriNingen.prototype.onCommand = function (uid, msg) {
-    this.basicCommand(uid, msg);
+AyatsuriNingen.prototype.onCommand = function (user, msg) {
+    this.basicCommand(user, msg);
     switch (msg[0]) {
         case '/reset':
-            if (this.ctrlr.uid === uid) {
+            if (this.ctrlr !== null && this.ctrlr.uid === user.uid) {
                 Game.clear(this.game);
                 this.broadcast(JSON.stringify(this.game));
-                this.chat('リセットしました。');
+                this.chat('ゲームをリセットしました。');
             } else {
                 this.chat('管理者でないためリセットできません。');
             }

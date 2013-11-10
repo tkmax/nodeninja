@@ -22,6 +22,7 @@ Game.clear = function (game) {
 
     game.state = State.Ready;
     game.sound = '';
+    game.playerNumber = 4;
     game.phase = '';
     game.active = -1;
     game.trade = {
@@ -48,9 +49,6 @@ Game.clear = function (game) {
     game.roadList = [];
     for (i = 0; i < 72; i++) game.roadList.push(-1);
     game.diceReel = [];
-    for (i = 0; i < 30; i++) {
-        for (j = 6; j >= 1; j--) game.diceReel.push(j);
-    }
     game.diceIdx = 0;
 }
 
@@ -59,6 +57,10 @@ Game.start = function (game) {
 
     game.state = State.Play;
     game.sound = '';
+    if (game.playerList[3].uid === '')
+        game.playerNumber = 3;
+    else
+        game.playerNumber = 4;
     game.phase = Phase.SetupSettlement1;
     for (i = 0; i < 5; i++) {
         game.trade.destroy[i] = 0;
@@ -129,7 +131,12 @@ Game.start = function (game) {
         tmp.splice(i, 1);
     }
     for (i = 0; i < game.resource.length; i++) game.resource[i] = 19;
-    for (i = 0; i < game.playerList.length; i++) Player.start(game.playerList[i]);
+    for (i = 0; i < game.playerNumber; i++) Player.start(game.playerList[i]);
+    if (game.playerNumber === 4) Player.clear(game.playerList[3]);
+    game.diceReel.length = 0;
+    for (i = 0; i < 50; i++) {
+        for (j = 1; j <= 6; j++) game.diceReel.push(j);
+    }
     while (game.diceReel.length > 0) {
         i = Math.floor(Math.random() * game.diceReel.length);
         tmp.push(game.diceReel[i]);
