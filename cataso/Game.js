@@ -132,7 +132,7 @@ Game.start = function (game) {
     }
     for (i = 0; i < game.resource.length; i++) game.resource[i] = 19;
     for (i = 0; i < game.playerNumber; i++) Player.start(game.playerList[i]);
-    if (game.playerNumber === 4) Player.clear(game.playerList[3]);
+    if (game.playerNumber === 3) Player.clear(game.playerList[3]);
     game.diceReel.length = 0;
     for (i = 0; i < 50; i++) {
         for (j = 1; j <= 6; j++) game.diceReel.push(j);
