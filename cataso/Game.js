@@ -134,8 +134,9 @@ Game.start = function (game) {
     for (i = 0; i < game.playerNumber; i++) Player.start(game.playerList[i]);
     if (game.playerNumber === 3) Player.clear(game.playerList[3]);
     game.diceReel.length = 0;
-    for (i = 0; i < 50; i++) {
+    for (i = 0; i < 25; i++) {
         for (j = 1; j <= 6; j++) game.diceReel.push(j);
+        for (j = 6; j >= 1; j--) game.diceReel.push(j);
     }
     while (game.diceReel.length > 0) {
         i = Math.floor(Math.random() * game.diceReel.length);
