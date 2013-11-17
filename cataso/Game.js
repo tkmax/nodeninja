@@ -1,5 +1,6 @@
 var Const = require('./Const')
     , Player = require('./Player')
+    , Xors = require('../Xors')
     , State = Const.State
     , Phase = Const.Phase
     , Resource = Const.Resource
@@ -48,42 +49,43 @@ Game.clear = function (game) {
     for (i = 0; i < 54; i++) game.settlementList.push(SettlementRank.None | 0x00ff);
     game.roadList = [];
     for (i = 0; i < 72; i++) game.roadList.push(-1);
-    game.diceReel = [];
-    game.diceIdx = 0;
 }
 
 Game.start = function (game) {
     var i, j, tmp;
 
     game.state = State.Play;
+    game.phase = Phase.SetupSettlement1;
     game.sound = '';
+
     if (game.playerList[3].uid === '')
         game.playerNumber = 3;
     else
         game.playerNumber = 4;
-    game.phase = Phase.SetupSettlement1;
-    for (i = 0; i < 5; i++) {
-        game.trade.destroy[i] = 0;
-        game.trade.create[i] = 0;
-    }
+    
+    for (i = 0; i < 5; i++)
+        game.trade.destroy[i] = game.trade.create[i] = 0;
+    
+    game.dice1 = 0;
+    game.dice2 = 0;
     game.trade.target = -1;
     game.largestArmy = -1;
     game.longestRoad = -1;
-    game.dice1 = 0;
-    game.dice2 = 0;
-    for (i = 0; i < game.settlementList.length; i++) game.settlementList[i] = (SettlementRank.None | 0x00ff);
+    
+    for (i = 0; i < game.settlementList.length; i++)
+        game.settlementList[i] = (SettlementRank.None | 0x00ff);
     for (i = 0; i < game.roadList.length; i++) game.roadList[i] = -1;
     game.active = 0;
     game.harbor.length = 0;
     for (i = 0; i < 6; i++) game.harbor.push(i);
     tmp = [];
     while (game.harbor.length > 0) {
-        i = Math.floor(Math.random() * game.harbor.length);
+        i = Xors.rand() % game.harbor.length;
         tmp.push(game.harbor[i]);
         game.harbor.splice(i, 1);
     }
     while (tmp.length > 0) {
-        i = Math.floor(Math.random() * tmp.length);
+        i = Xors.rand() % tmp.length;
         game.harbor.push(tmp[i]);
         tmp.splice(i, 1);
     }
@@ -97,12 +99,12 @@ Game.start = function (game) {
     ];
     tmp.length = 0;
     while (game.tileList.length > 0) {
-        i = Math.floor(Math.random() * game.tileList.length);
+        i = Xors.rand() % game.tileList.length;
         tmp.push(game.tileList[i]);
         game.tileList.splice(i, 1);
     }
     while (tmp.length > 0) {
-        i = Math.floor(Math.random() * tmp.length);
+        i = Xors.rand() % tmp.length;
         game.tileList.push(tmp[i]);
         tmp.splice(i, 1);
     }
@@ -121,34 +123,18 @@ Game.start = function (game) {
     for (i = 0; i < 2; i++) game.card.push(Card.Monopoly);
     tmp.length = 0;
     while (game.card.length > 0) {
-        i = Math.floor(Math.random() * game.card.length);
+        i = Xors.rand() % game.card.length;
         tmp.push(game.card[i]);
         game.card.splice(i, 1);
     }
     while (tmp.length > 0) {
-        i = Math.floor(Math.random() * tmp.length);
+        i = Xors.rand() % tmp.length;
         game.card.push(tmp[i]);
         tmp.splice(i, 1);
     }
     for (i = 0; i < game.resource.length; i++) game.resource[i] = 19;
     for (i = 0; i < game.playerNumber; i++) Player.start(game.playerList[i]);
     if (game.playerNumber === 3) Player.clear(game.playerList[3]);
-    game.diceReel.length = 0;
-    for (i = 0; i < 25; i++) {
-        for (j = 1; j <= 6; j++) game.diceReel.push(j);
-        for (j = 6; j >= 1; j--) game.diceReel.push(j);
-    }
-    while (game.diceReel.length > 0) {
-        i = Math.floor(Math.random() * game.diceReel.length);
-        tmp.push(game.diceReel[i]);
-        game.diceReel.splice(i, 1);
-    }
-    while (tmp.length > 0) {
-        i = Math.floor(Math.random() * tmp.length);
-        game.diceReel.push(tmp[i]);
-        tmp.splice(i, 1);
-    }
-    game.diceIdx = 0;
 }
 
 Game.createNumList = function (tileList) {
@@ -157,13 +143,13 @@ Game.createNumList = function (tileList) {
     do {
         result = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12];
         while (result.length > 0) {
-            i = Math.floor(Math.random() * result.length);
+            i = Xors.rand() % result.length;
             seed.push(result[i]);
             result.splice(i, 1);
         }
         while (seed.length > 0) {
             if (tileList[result.length] === -1) result.push(-1);
-            i = Math.floor(Math.random() * seed.length);
+            i = Xors.rand() % seed.length;
             result.push(seed[i]);
             seed.splice(i, 1);
         }
@@ -401,16 +387,16 @@ Game.robberResource = function (game, playerIdx) {
         for (j = 0; j < game.playerList[playerIdx].resource[i]; j++) foo.push(i);
     }
     while (foo.length > 0) {
-        i = Math.floor(Math.random() * foo.length);
+        i = Xors.rand() % foo.length;
         bar.push(foo[i]);
         foo.splice(i, 1);
     }
     while (bar.length > 0) {
-        i = Math.floor(Math.random() * bar.length);
+        i = Xors.rand() % bar.length;
         foo.push(bar[i]);
         bar.splice(i, 1);
     }
-    i = Math.floor(Math.random() * foo.length);
+    i = Xors.rand() % foo.length;
     Game.huntResource(game, playerIdx, game.active, foo[i], 1);
 }
 
@@ -437,6 +423,7 @@ Game.canBuildRoads = function (game) {
     for (i = 0; i < game.roadList.length; i++) {
         if(Game.canBuildRoad(game, i)) return true;
     }
+
     return false;
 }
 
@@ -509,7 +496,9 @@ Game.roadSize = function (game, playerIdx, pt, max, depth) {
 Game.sumPlayerResource = function (game, playerIdx) {
     var i, sum = 0;
 
-    for (i = 0; i < game.playerList[playerIdx].resource.length; i++) sum += game.playerList[playerIdx].resource[i];
+    for (i = 0; i < game.playerList[playerIdx].resource.length; i++)
+        sum += game.playerList[playerIdx].resource[i];
+
     return sum;
 }
 
@@ -524,6 +513,7 @@ Game.sumResource = function (game) {
     var i, sum = 0;
 
     for (i = 0; i < game.resource.length; i++) sum += game.resource[i];
+
     return sum;
 }
 
@@ -553,6 +543,17 @@ Game.resource = function (type) {
         case Resource.Lumber:
             return '木';
     }
+}
+
+Game.diceRoll = function () {
+    var i, result = 0;
+
+    for (i = Xors.rand() % 10; i >= 0; i--) Xors.rand();
+
+    while (result === 0 || result === 7)
+        result = Xors.rand() % 8;
+
+    return result;
 }
 
 module.exports = Game;
