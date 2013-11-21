@@ -546,7 +546,9 @@ Game.resource = function (type) {
 }
 
 Game.diceRoll = function () {
-    var result = 0;
+    var i, result = 0;
+
+    for (i = Math.floor(Math.random() * 1000); i > 0; i--) Xors.rand();
 
     result = Math.floor((Xors.rand() % 60) / 10) + 1;
 

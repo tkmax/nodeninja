@@ -8,7 +8,7 @@ var WebSocketServer = require('ws').Server
    , AyatsuriNingen = require('./ayatsuriningen/AyatsuriNingen')
    , Xors = require('./Xors');
 
-Xors.seed(Math.floor(Math.random() * 100000));
+Xors.seed(Math.floor(Math.random() * 100000) + 1);
 
 var instanceList = [
     new BattleRaiso()
