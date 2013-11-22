@@ -546,13 +546,11 @@ Game.resource = function (type) {
 }
 
 Game.diceRoll = function () {
-    var i, result = 0;
+    var s1 = [1, 2, 3, 4, 5, 6], s2 = [];
 
-    for (i = Math.floor(Math.random() * 1000); i > 0; i--) Xors.rand();
+    while (s1.length > 0) s2.push(s1.splice(Xors.rand() % s1.length, 1)[0]);
 
-    result = Math.floor((Xors.rand() % 60) / 10) + 1;
-
-    return result;
+    return s2[Xors.rand() % 6];
 }
 
 module.exports = Game;
