@@ -10,7 +10,7 @@ var WebSocketServer = require('ws').Server
 
 Xors.seed0(123456789);
 Xors.seed1(987654321);
-Xors.skip(Math.floor(Math.random() * 1000000) + 1);
+Xors.skip(100000);
 
 var instanceList = [
       new BattleRaiso()
