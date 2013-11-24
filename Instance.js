@@ -1,4 +1,6 @@
-Instance = function () {
+var Xors = require('./Xors');
+
+var Instance = function () {
 }
 
 Instance.prototype.title = null;
@@ -18,9 +20,9 @@ Instance.prototype.removeUser = function (user) {
         if (this.userList[i].ws === user.ws) {
             this.userList.splice(i, 1);
             if (user.trip !== '')
-                this._broadcast('F' + user.uid + '%' + user.trip);
+                this._broadcast('E' + user.uid + '%' + user.trip);
             else
-                this._broadcast('F' + user.uid);
+                this._broadcast('E' + user.uid);
             break;
         }
     }
@@ -48,25 +50,22 @@ Instance.prototype.unicast = function (uid, msg) {
             break;
         }
     }
-    if (user !== null) this._unicast(user, 'J' + msg);
+    if (user !== null) this._unicast(user, 'I' + msg);
 }
 
 Instance.prototype._broadcast = function (msg) {
     var i;
 
-    for (i = 0; i < this.userList.length; i++) this._unicast(this.userList[i], msg);
+    for (i = 0; i < this.userList.length; i++)
+        this._unicast(this.userList[i], msg);
 }
 
 Instance.prototype.broadcast = function (msg) {
-    this._broadcast('J' + msg);
+    this._broadcast('I' + msg);
 }
 
-Instance.prototype.chat = function (msg) {
-    var i;
-
-    for (i in this.userList) {
-        this.userList[i].ws.send('H? ' + msg);
-    }
+Instance.prototype.chat = function (uid, color, msg) {
+    this._broadcast('H' + uid + ' ' + color + ' ' + msg);
 }
 
 Instance.prototype.onLoad = function () { }
@@ -75,34 +74,40 @@ Instance.prototype.onMessage = function (uid, msg) { }
 
 Instance.prototype.onCommand = function (user, msg) { }
 
+Instance.prototype.onChat = function (user, msg) {
+    this.chat(
+        user.uid, 'white', (msg.split('<').join('&lt;')).split('>').join('&gt;')
+    );
+}
+
 Instance.prototype.basicCommand = function (user, msg) {
     switch (msg[0]) {
         case '/title':
             if (msg.length > 1) {
                 this.title = msg[1].substring(0, 15);
-                this.chat('タイトルが「' + this.title + '」に変更されました。');
+                this.chat('?', 'deeppink', 'タイトルが「' + this.title + '」に変更されました。');
             }
             break;
         case '/grant':
             if (this.ctrlr === null) {
                 this.ctrlr = user;
-                this._broadcast('I' + user.uid);
-                this.chat(user.uid + 'が管理者を取得しました。');
+                this._broadcast('F' + user.uid);
+                this.chat('?', 'deeppink', user.uid + 'が管理者を取得しました。');
             } else {
-                this.chat('既に管理者が居ます。');
+                this.chat('?', 'deeppink', '既に管理者が居ます。');
             }
             break;
         case '/revoke':
             if (this.ctrlr !== null && this.ctrlr === user) {
                 this.ctrlr = null;
                 this._broadcast('G');
-                this.chat(user.uid + 'が管理者を辞退しました。');
+                this.chat('?', 'deeppink', user.uid + 'が管理者を辞退しました。');
             } else {
-                this.chat('元から管理者ではありません。');
+                this.chat('?', 'deeppink', '元から管理者ではありません。');
             }
             break;
         case '/dice':
-            this.chat(user.uid + 'のダイス => [' + (Math.floor(Math.random() * 100) + 1) + ']');
+            this.chat('?', 'deeppink', user.uid + 'のダイス => [' + Xors.rand() % 100 + ']');
             break;
     }
 }

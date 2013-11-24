@@ -122,16 +122,19 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         this.game.dice1 = Game.diceRoll();
                         this.game.dice2 = Game.diceRoll();
                         foo = this.game.dice1 + this.game.dice2;
-                        this.chat('ダイスロール -> ' + foo);
+                        this.chat('?', 'deeppink', 'ダイスロール -> ' + foo);
                         if (foo === 7) {
                             for (i = 0; i < this.game.playerList.length; i++) {
                                 if (Game.sumPlayerResource(this.game, i) >= 8) {
-                                    this.chat('バースト発生 -> ' + this.game.playerList[i].uid + '(' + Game.color(i) + ')');
+                                    this.chat(
+                                        '?', 'deeppink', 'バースト発生 -> '
+                                        + this.game.playerList[i].uid + '(' + Game.color(i) + ')'
+                                    );
                                     this.game.playerList[i].burst = Math.floor(Game.sumPlayerResource(this.game, i) / 2);
                                     this.game.phase = Phase.Burst;
                                 }
                             }
-                            this.chat('** 盗賊が発生しました **');
+                            this.chat('?', 'deeppink', '** 盗賊が発生しました **');
                             if (this.game.phase !== Phase.Burst) this.game.phase = Phase.Robber1;
                             this.game.sound = 'robber';
                         } else {
@@ -156,7 +159,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                             for (i = 0; i < hoge.length; i++) {
                                 if (this.game.resource[i] < hoge[i]) {
                                     hoge[i] = -1;
-                                    this.chat('** 資源不足で' + Game.resource(i) + 'の生産失敗 **');
+                                    this.chat('?', 'deeppink', '** 資源不足で' + Game.resource(i) + 'の生産失敗 **');
                                 }
                             }
                             for (i = 0; i < this.game.numList.length; i++) {
@@ -191,8 +194,12 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && this.game.playerList[opt[0]].resource[opt[1]] > 0
                     ) {
                         this.chat(
-                            Game.resource(parseInt(opt[1])) + 'を1枚を破棄 -> '
-                            + this.game.playerList[opt[0]].uid + '(' + Game.color(parseInt(opt[0])) + ')'
+                            '?', 'deeppink',
+                            Game.resource(
+                                parseInt(opt[1])
+                            ) + 'を1枚を破棄 -> '
+                            + this.game.playerList[opt[0]].uid
+                            + '(' + Game.color(parseInt(opt[0])) + ')'
                         );
                         this.game.playerList[opt[0]].burst--;
                         Game.destroyResource(this.game, opt[0], opt[1], 1);
@@ -235,7 +242,11 @@ Cataso.prototype.onMessage = function (uid, msg) {
                     ) {
                         opt = Game.option(msg);
                         Game.robberResource(this.game, opt[0]);
-                        this.chat('資源を１枚略奪 -> ' + this.game.playerList[opt[0]].uid + '(' + Game.color(parseInt(opt[0])) + ')');
+                        this.chat(
+                            '?', 'deeppink', '資源を１枚略奪 -> '
+                            + this.game.playerList[opt[0]].uid
+                            + '(' + Game.color(parseInt(opt[0])) + ')'
+                        );
                         this.game.phase = Phase.Main;
                     }
                     break;
@@ -259,7 +270,11 @@ Cataso.prototype.onMessage = function (uid, msg) {
                     ) {
                         foo = Game.buildRoad(this.game, opt[0]);
                         if (foo !== -1) {
-                            this.chat('** ' + this.game.playerList[foo].uid + '(' + Game.color(foo) + ')' + 'が道賞を獲得しました **');
+                            this.chat(
+                                '?', 'deeppink',
+                                '** ' + this.game.playerList[foo].uid
+                                + '(' + Game.color(foo) + ')' + 'が道賞を獲得しました **'
+                            );
                             this.game.sound = 'get';
                         } else {
                             this.game.sound = 'build';
@@ -292,7 +307,11 @@ Cataso.prototype.onMessage = function (uid, msg) {
                     ) {
                         foo = Game.buildSettlement(this.game, parseInt(opt[0]));
                         if (foo !== -1) {
-                            this.chat('** ' + this.game.playerList[foo].uid + '(' + Game.color(foo) + ')' + 'が道賞を獲得しました **');
+                            this.chat(
+                                '?', 'deeppink',
+                                '** ' + this.game.playerList[foo].uid
+                                + '(' + Game.color(foo) + ')' + 'が道賞を獲得しました **'
+                            );
                             this.game.sound = 'get';
                         } else {
                             this.game.sound = 'build';
@@ -338,7 +357,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         Game.destroyResource(this.game, this.game.active, Resource.Wool, 1);
                         Game.destroyResource(this.game, this.game.active, Resource.Ore, 1);
                         Game.destroyResource(this.game, this.game.active, Resource.Grain, 1);
-                        this.chat('カードを1枚引きました。');
+                        this.chat('?', 'deeppink', 'カードを1枚引きました。');
                     }
                     break;
                 case 't':
@@ -366,7 +385,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                                 Game.destroyResource(this.game, this.game.active, i, parseInt(opt[i]));
                             }
                         }
-                        this.chat(foo);
+                        this.chat('?', 'deeppink', foo);
                         foo = '海外貿易(入) ->';
                         for (i = 5; i < 10; i++) {
                             if (opt[i] !== '0') {
@@ -374,7 +393,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                                 Game.createResource(this.game, this.game.active, i - 5, parseInt(opt[i]));
                             }
                         }
-                        this.chat(foo);
+                        this.chat('?', 'deeppink', foo);
                         this.game.phase = Phase.Main;
                     }
                     break;
@@ -397,7 +416,12 @@ Cataso.prototype.onMessage = function (uid, msg) {
                     ) {
                         opt = Game.option(msg);
                         this.game.trade.playerIdx = parseInt(opt[0]);
-                        this.chat('国内貿易を申し込みました -> ' + this.game.playerList[this.game.trade.playerIdx].uid + '(' + Game.color(this.game.trade.playerIdx) + ')');
+                        this.chat(
+                            '?', 'deeppink',
+                            '国内貿易を申し込みました -> '
+                            + this.game.playerList[this.game.trade.playerIdx].uid
+                            + '(' + Game.color(this.game.trade.playerIdx) + ')'
+                        );
                         foo = '';
                         for (i = 1; i < 6; i++) {
                             if (opt[i] !== '0') {
@@ -406,9 +430,9 @@ Cataso.prototype.onMessage = function (uid, msg) {
                             this.game.trade.destroy[i - 1] = parseInt(opt[i]);
                         }
                         if (foo === '') {
-                            this.chat('国内貿易(出) -> なし');
+                            this.chat('?', 'deeppink', '国内貿易(出) -> なし');
                         } else {
-                            this.chat('国内貿易(出) ->' + foo);
+                            this.chat('?', 'deeppink', '国内貿易(出) ->' + foo);
                         }
                         foo = '';
                         for (i = 6; i < 11; i++) {
@@ -418,9 +442,9 @@ Cataso.prototype.onMessage = function (uid, msg) {
                             this.game.trade.create[i - 6] = parseInt(opt[i]);
                         }
                         if (foo === '') {
-                            this.chat('国内貿易(求) -> なし');
+                            this.chat('?', 'deeppink', '国内貿易(求) -> なし');
                         } else {
-                            this.chat('国内貿易(求) ->' + foo);
+                            this.chat('?', 'deeppink', '国内貿易(求) ->' + foo);
                         }
                         this.game.phase = Phase.DomesticTrade2;
                     }
@@ -430,7 +454,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         this.game.phase === Phase.DomesticTrade2
                         && this.game.playerList[this.game.trade.playerIdx].uid === uid
                     ) {
-                        this.chat('拒否されました。');
+                        this.chat('?', 'deeppink', '拒否されました。');
                         this.game.phase = Phase.Main;
                     }
                     break;
@@ -451,9 +475,14 @@ Cataso.prototype.onMessage = function (uid, msg) {
                                 Game.huntResource(this.game, this.game.active, this.game.trade.playerIdx, i, this.game.trade.destroy[i]);
                                 Game.huntResource(this.game, this.game.trade.playerIdx, this.game.active, i, this.game.trade.create[i]);
                             }
-                            this.chat('交換しました。');
+                            this.chat('?', 'deeppink', '交換しました。');
                         } else {
-                            this.chat('** ' + this.game.playerList[this.game.trade.playerIdx].uid + '(' + Game.color(this.game.trade.playerIdx) + ')の資源不足のため交換できません。 **');
+                            this.chat(
+                                '?', 'deeppink',
+                                '** ' + this.game.playerList[this.game.trade.playerIdx].uid
+                                + '(' + Game.color(this.game.trade.playerIdx)
+                                + ')の資源不足のため交換できません。 **'
+                            );
                         }
                         this.game.phase = Phase.Main;
                     }
@@ -464,7 +493,11 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && this.game.playerList[this.game.active].uid === uid
                         && (this.game.playerList[this.game.active].score + this.game.playerList[this.game.active].bonus) >= 10
                     ) {
-                        this.chat('** ' + this.game.playerList[this.game.active].uid + '(' + Game.color(this.game.active) + ')が勝利しました **');
+                        this.chat(
+                            '?', 'deeppink',
+                            '** ' + this.game.playerList[this.game.active].uid
+                            + '(' + Game.color(this.game.active) + ')が勝利しました **'
+                        );
                         for (i = 0; i < this.game.playerNumber; i++) this.game.playerList[i].uid = '';
                         this.game.playerNumber = 4;
                         this.game.state = State.Ready;
@@ -500,7 +533,11 @@ Cataso.prototype.onMessage = function (uid, msg) {
                             if (this.game.playerList[this.game.active].deadCard[Card.Soldier] >= 3) {
                                 this.game.largestArmy = this.game.active;
                                 this.game.playerList[this.game.active].bonus += 2;
-                                this.chat('** ' + this.game.playerList[this.game.active].uid + '(' + Game.color(this.game.active) + ')' + 'が騎士賞を獲得しました **');
+                                this.chat(
+                                    '?', 'deeppink',
+                                    '** ' + this.game.playerList[this.game.active].uid
+                                    + '(' + Game.color(this.game.active) + ')' + 'が騎士賞を獲得しました **'
+                                );
                                 this.game.sound = 'get';
                             }
                         } else if (
@@ -510,7 +547,11 @@ Cataso.prototype.onMessage = function (uid, msg) {
                             this.game.playerList[this.game.largestArmy].bonus -= 2;
                             this.game.largestArmy = this.game.active;
                             this.game.playerList[this.game.active].bonus += 2;
-                            this.chat('** ' + this.game.playerList[this.game.active].uid + '(' + Game.color(this.game.active) + ')' + 'が騎士賞を獲得しました **');
+                            this.chat(
+                                '?', 'deeppink',
+                                '** ' + this.game.playerList[this.game.active].uid
+                                + '(' + Game.color(this.game.active) + ')' + 'が騎士賞を獲得しました **'
+                            );
                             this.game.sound = 'get';
                         }
                         this.game.phase = Phase.Soldier1;
@@ -551,7 +592,11 @@ Cataso.prototype.onMessage = function (uid, msg) {
                     ) {
                         opt = Game.option(msg);
                         Game.robberResource(this.game, opt[0]);
-                        this.chat('資源を１枚略奪 -> ' + this.game.playerList[opt[0]].uid + '(' + Game.color(parseInt(opt[0])) + ')');
+                        this.chat(
+                            '?', 'deeppink',
+                            '資源を１枚略奪 -> ' + this.game.playerList[opt[0]].uid
+                            + '(' + Game.color(parseInt(opt[0])) + ')'
+                        );
                         if (this.game.dice1 === 0) {
                             this.game.phase = Phase.DiceRoll;
                         } else {
@@ -578,7 +623,12 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         opt = Game.option(msg);
                         foo = Game.buildRoad(this.game, opt[0]);
                         if (foo !== -1) {
-                            this.chat('** ' + this.game.playerList[foo].uid + '(' + Game.color(foo) + ')' + 'が道賞を獲得しました **');
+                            this.chat(
+                                '?', 'deeppink',
+                                '** ' + this.game.playerList[foo].uid
+                                + '(' + Game.color(foo) + ')'
+                                + 'が道賞を獲得しました **'
+                            );
                             this.game.sound = 'get';
                         } else {
                             this.game.sound = 'build';
@@ -602,7 +652,12 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         opt = Game.option(msg);
                         foo = Game.buildRoad(this.game, opt[0]);
                         if (foo !== -1) {
-                            this.chat('** ' + this.game.playerList[foo].uid + '(' + Game.color(foo) + ')' + 'が道賞を獲得しました **');
+                            this.chat(
+                                '?', 'deeppink',
+                                '** ' + this.game.playerList[foo].uid
+                                + '(' + Game.color(foo) + ')'
+                                + 'が道賞を獲得しました **'
+                            );
                             this.game.sound = 'get';
                         } else {
                             this.game.sound = 'build';
@@ -634,7 +689,10 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && this.game.resource[opt[0]] > 0
                     ) {
                         Game.createResource(this.game, this.game.active, opt[0], 1);
-                        this.chat(Game.resource(parseInt(opt[0])) + 'を生産しました。');
+                        this.chat(
+                            '?', 'deeppink',
+                            Game.resource(parseInt(opt[0])) + 'を生産しました。'
+                        );
                         if (Game.sumResource(this.game) > 0) {
                             this.game.phase = Phase.YearOfPlenty2;
                         } else {
@@ -654,7 +712,10 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         && this.game.resource[opt[0]] > 0
                     ) {
                         Game.createResource(this.game, this.game.active, opt[0], 1);
-                        this.chat(Game.resource(parseInt(opt[0])) + 'を生産しました。');
+                        this.chat(
+                            '?', 'deeppink',
+                            Game.resource(parseInt(opt[0])) + 'を生産しました。'
+                        );
                         if (this.game.dice1 === 0) {
                             this.game.phase = Phase.DiceRoll;
                         } else {
@@ -685,7 +746,10 @@ Cataso.prototype.onMessage = function (uid, msg) {
                                 this.game.playerList[i].resource[opt[0]] = 0;
                             }
                         }
-                        this.chat(Game.resource(parseInt(opt[0])) + 'を独占しました。');
+                        this.chat(
+                            '?', 'deeppink',
+                            Game.resource(parseInt(opt[0])) + 'を独占しました。'
+                        );
                         if (this.game.dice1 === 0) {
                             this.game.phase = Phase.DiceRoll;
                         } else {
@@ -700,6 +764,31 @@ Cataso.prototype.onMessage = function (uid, msg) {
     }
 }
 
+Cataso.prototype.onChat = function (user, msg) {
+    var i, color = 'white';
+
+    for (i = 0; i < this.game.playerList.length && color === 'white'; i++) {
+        if (this.game.playerList[i].uid === user.uid) {
+            switch (i) {
+                case 0:
+                    color = 'red';
+                    break;
+                case 1:
+                    color = 'dodgerblue';
+                    break;
+                case 2:
+                    color = 'yellow';
+                    break;
+                case 3:
+                    color = 'green';
+                    break;
+            }
+        }
+    }
+
+    this.chat(user.uid, color, (msg.split('<').join('&lt;')).split('>').join('&gt;'));
+}
+
 Cataso.prototype.onCommand = function (user, msg) {
     this.basicCommand(user, msg);
     switch (msg[0]) {
@@ -707,9 +796,9 @@ Cataso.prototype.onCommand = function (user, msg) {
             if (this.ctrlr !== null && this.ctrlr.uid === user.uid) {
                 Game.clear(this.game);
                 this.broadcast(JSON.stringify(this.game));
-                this.chat('ゲームをリセットしました。');
+                this.chat('?', 'deeppink', 'ゲームをリセットしました。');
             } else {
-                this.chat('管理者でないためリセットできません。');
+                this.chat('?', 'deeppink', '管理者でないためリセットできません。');
             }
             break;
     }

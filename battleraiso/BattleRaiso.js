@@ -29,7 +29,7 @@ BattleRaiso.prototype.onMessage = function (uid, msg) {
     } if (this.game.state === State.Ready) {
         switch (msg[0]) {
             case 'a':
-                for (i in this.game.playerList) {
+                for (i = 0; i < this.game.playerList.length; i++) {
                     if (this.game.playerList[i].uid === '') {
                         this.game.playerList[i].uid = uid;
                         break;
@@ -134,7 +134,7 @@ BattleRaiso.prototype.onMessage = function (uid, msg) {
             case 'g':
                 if (this.game.phase === Phase.Fog) {
                     this.game.sound = 'build';
-                    this.chat('霧をプレイしました。');
+                    this.chat('?', 'deeppink', '霧をプレイしました。');
                     this.game.playerList[this.game.active].count++;
                     optn = Game.split(msg);
                     this.game.weather[optn[0]] += 1;
@@ -151,7 +151,7 @@ BattleRaiso.prototype.onMessage = function (uid, msg) {
             case 'h':
                 if (this.game.phase === Phase.Mud) {
                     this.game.sound = 'build';
-                    this.chat('泥をプレイしました。');
+                    this.chat('?', 'deeppink', '泥をプレイしました。');
                     this.game.playerList[this.game.active].count++;
                     optn = Game.split(msg);
                     this.game.weather[optn[0]] += 2;
@@ -172,12 +172,12 @@ BattleRaiso.prototype.onMessage = function (uid, msg) {
                 ) {
                     this.game.sound = 'build';
                     if (this.game.phase === Phase.Scout1) {
-                        this.chat('偵察をプレイしました。');
+                        this.chat('?', 'deeppink', '偵察をプレイしました。');
                         this.game.playerList[this.game.active].count++;
                         Game.discard(this.game);
                         this.game.phase = Phase.Scout2;
                     }
-                    this.chat('部隊カードを１枚引きました。');
+                    this.chat('?', 'deeppink', '部隊カードを１枚引きました。');
                     this.game.playerList[this.game.active].hand.push(this.game.troopDeck.shift());
                     if (this.game.playerList[this.game.active].hand.length >= 9
                     || (this.game.troopDeck.length === 0 && this.game.tacticsDeck.length === 0)
@@ -193,12 +193,12 @@ BattleRaiso.prototype.onMessage = function (uid, msg) {
                 ) {
                     this.game.sound = 'build';
                     if (this.game.phase === Phase.Scout1) {
-                        this.chat('偵察をプレイしました。');
+                        this.chat('?', 'deeppink', '偵察をプレイしました。');
                         this.game.playerList[this.game.active].count++;
                         Game.discard(this.game);
                         this.game.phase = Phase.Scout2;
                     }
-                    this.chat('戦術カードを１枚引きました。');
+                    this.chat('?', 'deeppink', '戦術カードを１枚引きました。');
                     this.game.playerList[this.game.active].hand.push(this.game.tacticsDeck.shift());
                     if (this.game.playerList[this.game.active].hand.length >= 9
                     || (this.game.troopDeck.length === 0 && this.game.tacticsDeck.length === 0)
@@ -216,10 +216,10 @@ BattleRaiso.prototype.onMessage = function (uid, msg) {
                 ) {
                     this.game.sound = 'build';
                     if ((this.game.playerList[this.game.active].hand[optn[0]] & 0xff00) === 0x0600) {
-                        this.chat('戦術カードを１枚山札の一番上に置きました。');
+                        this.chat('?', 'deeppink', '戦術カードを１枚山札の一番上に置きました。');
                         this.game.tacticsDeck.unshift(this.game.playerList[this.game.active].hand[optn[0]]);
                     } else {
-                        this.chat('部隊カードを１枚山札の一番上に置きました。');
+                        this.chat('?', 'deeppink', '部隊カードを１枚山札の一番上に置きました。');
                         this.game.troopDeck.unshift(this.game.playerList[this.game.active].hand[optn[0]]);
                     }
                     this.game.playerList[this.game.active].hand.splice(optn[0], 1);
@@ -232,7 +232,7 @@ BattleRaiso.prototype.onMessage = function (uid, msg) {
             case 'l':
                 if (this.game.phase === Phase.Redeploy1) {
                     this.game.sound = 'build';
-                    this.chat('再配置をプレイしました。');
+                    this.chat('?', 'deeppink', '再配置をプレイしました。');
                     this.game.playerList[this.game.active].count++;
                     optn = Game.split(msg);
                     this.game.target.y = parseInt(optn[0]);
@@ -245,7 +245,7 @@ BattleRaiso.prototype.onMessage = function (uid, msg) {
                     optn = Game.split(msg);
                     this.game.sound = 'build';
                     if (optn[0] === '-1') {
-                        this.chat((this.game.target.y + 1) + '列目から除外しました。');
+                        this.chat('?', 'deeppink', (this.game.target.y + 1) + '列目から除外しました。');
                         this.game.playerList[this.game.active].talon.push(
                             this.game.playerList[this.game.active].field[this.game.target.y][this.game.target.x]
                         );
@@ -273,10 +273,10 @@ BattleRaiso.prototype.onMessage = function (uid, msg) {
             case 'n':
                 if (this.game.phase === Phase.Deserter) {
                     this.game.sound = 'build';
-                    this.chat('脱走をプレイしました。');
+                    this.chat('?', 'deeppink', '脱走をプレイしました。');
                     this.game.playerList[this.game.active].count++;
                     optn = Game.split(msg);
-                    this.chat((parseInt(optn[0]) + 1) + '列目から除外しました。');
+                    this.chat('?', 'deeppink', (parseInt(optn[0]) + 1) + '列目から除外しました。');
                     this.game.playerList[unActive].talon.push(
                         this.game.playerList[unActive].field[optn[0]][optn[1]]
                     );
@@ -293,7 +293,7 @@ BattleRaiso.prototype.onMessage = function (uid, msg) {
             case 'o':
                 if (this.game.phase === Phase.Traitor1) {
                     this.game.sound = 'build';
-                    this.chat('裏切りをプレイしました。');
+                    this.chat('?', 'deeppink', '裏切りをプレイしました。');
                     this.game.playerList[this.game.active].count++;
                     optn = Game.split(msg);
                     this.game.target.y = parseInt(optn[0]);
@@ -336,7 +336,7 @@ BattleRaiso.prototype.onMessage = function (uid, msg) {
                 break;
             case 's':
                 if (this.game.phase === Phase.Main) {
-                    this.chat('パスしました。');
+                    this.chat('?', 'deeppink', 'パスしました。');
                     Game.nextTurn(this.game);
                 }
                 break;
@@ -346,6 +346,25 @@ BattleRaiso.prototype.onMessage = function (uid, msg) {
     }
 }
 
+BattleRaiso.prototype.onChat = function (user, msg) {
+    var i, color = 'white';
+
+    for (i = 0; i < this.game.playerList.length && color === 'white'; i++) {
+        if (this.game.playerList[i].uid === user.uid) {
+            switch (i) {
+                case 0:
+                    color = 'dodgerblue';
+                    break;
+                case 1:
+                    color = 'yellow';
+                    break;
+            }
+        }
+    }
+
+    this.chat(user.uid, color, (msg.split('<').join('&lt;')).split('>').join('&gt;'));
+}
+
 BattleRaiso.prototype.onCommand = function (user, msg) {
     this.basicCommand(user, msg);
     switch (msg[0]) {
@@ -353,9 +372,9 @@ BattleRaiso.prototype.onCommand = function (user, msg) {
             if (this.ctrlr !== null && this.ctrlr.uid === user.uid) {
                 Game.clear(this.game);
                 this.broadcast(JSON.stringify(this.game));
-                this.chat('ゲームをリセットしました。');
+                this.chat('?', 'deeppink', 'ゲームをリセットしました。');
             } else {
-                this.chat('管理者でないためリセットできません。');
+                this.chat('?', 'deeppink', '管理者でないためリセットできません。');
             }
             break;
     }

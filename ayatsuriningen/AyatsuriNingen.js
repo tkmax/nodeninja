@@ -71,6 +71,7 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                                 }
                             }
                             this.chat(
+                                '?', 'deeppink',
                                 '★' + Game.job(this.game.playerList[this.game.active].job)
                                 + '(' + this.game.playerList[this.game.active].uid + ')のターン'
                             );
@@ -92,9 +93,9 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                             && this.game.obsOwner === this.game.active
                         ) {
                             this.game.peek.push(this.game.deck.shift());
-                            this.chat('=>山札の上から3枚見ます。(天文台含む)');
+                            this.chat('?', 'deeppink', '=>山札の上から3枚見ます。(天文台含む)');
                         } else {
-                            this.chat('=>山札の上から2枚見ます。');
+                            this.chat('?', 'deeppink', '=>山札の上から2枚見ます。');
                         }
                     }
                     break;
@@ -109,12 +110,12 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                             this.game.isFirst
                             && this.game.canLib
                         ) {
-                            this.chat('=>1枚手札に加えました。(図書館)');
+                            this.chat('?', 'deeppink', '=>1枚手札に加えました。(図書館)');
                             this.game.canLib = false;
                         } else {
-                            this.chat('=>1枚手札に加えました。');
+                            this.chat('?', 'deeppink', '=>1枚手札に加えました。');
                             while (this.game.peek.length > 0) {
-                                this.chat('=>「' + Game.build(this.game.peek[0]) + '」を諦めました。');
+                                this.chat('?', 'deeppink', '=>「' + Game.build(this.game.peek[0]) + '」を諦めました。');
                                 this.game.deck.push(this.game.peek.shift());
                             }
                             this.game.canDrawCard = false;
@@ -130,7 +131,7 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                         this.game.phase === Phase.Main
                         && this.game.playerList[this.game.active].uid === uid
                     ) {
-                        this.chat('=>コインを2枚貰いました。');
+                        this.chat('?', 'deeppink', '=>コインを2枚貰いました。');
                         this.game.playerList[this.game.active].coin += 2;
                         this.game.canDrawCard = false;
                         this.game.canGet2Coin = false;
@@ -180,6 +181,7 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                             && this.game.playerList[this.game.active].build.length >= 8
                         ) this.game.firstFinish = this.game.active;
                         this.chat(
+                            '?', 'deeppink',
                             '=>「' + Game.build(this.game.playerList[this.game.active].hand[foo[0]])
                             + '」を建築しました。'
                         );
@@ -197,7 +199,8 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                     ) {
                         for (i = 0; i < this.game.job.length; i++) {
                             if (i === this.game.kill) {
-                                if (this.game.active < i) this.chat('【!】' + Game.job(i) + 'は暗殺により飛ばします。');
+                                if (this.game.active < i)
+                                    this.chat('?', 'deeppink', '【!】' + Game.job(i) + 'は暗殺により飛ばします。');
                             } else if (
                                 this.game.job[i] >= 0
                                 && !this.game.playerList[this.game.job[i]].isOpen
@@ -208,11 +211,15 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                             }
                         }
                         if (i < this.game.job.length) {
-                            this.chat('★' + Game.job(i) + '(' + this.game.playerList[this.game.active].uid + ')のターン');
+                            this.chat(
+                                '?', 'deeppink',
+                                '★' + Game.job(i) + '('
+                                + this.game.playerList[this.game.active].uid + ')のターン'
+                            );
                             if (i === this.game.steal) {
                                 this.game.playerList[this.game.job[Job.Robber]].coin += this.game.playerList[this.game.active].coin;
                                 this.game.playerList[this.game.active].coin = 0;
-                                this.chat('【!】盗賊によってコインを盗まれました。');
+                                this.chat('?', 'deeppink', '【!】盗賊によってコインを盗まれました。');
                             }
                             Game.openTurn(this.game);
                             this.game.sound = 'end';
@@ -221,6 +228,7 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                                 if (this.game.job[Job.King] >= 0) {
                                     this.game.king = this.game.job[Job.King];
                                     this.chat(
+                                        '?', 'deeppink',
                                         '【!】' + this.game.playerList[this.game.king].uid
                                         + '(' + Game.color(this.game.king) + ')' + 'が王冠を獲得しました。'
                                     );
@@ -246,9 +254,10 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                                         }
                                     }
                                 }
-                                this.chat('** おめでとうございます。 **');
+                                this.chat('?', 'deeppink', '** おめでとうございます。 **');
                                 for (i = 0; i < foo.length; i++) {
                                     this.chat(
+                                        '?', 'deeppink',
                                         this.game.playerList[foo[i]].uid
                                         + '(' + Game.color(foo[i]) + ')の勝利です。'
                                     );
@@ -276,8 +285,8 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                         && this.game.canKill
                     ) {
                         foo = parseInt((Game.option(msg))[0]);
-                        this.chat('■暗殺者(暗殺)');
-                        this.chat('→' + Game.job(foo) + 'を暗殺しました。')
+                        this.chat('?', 'deeppink', '■暗殺者(暗殺)');
+                        this.chat('?', 'deeppink', '→' + Game.job(foo) + 'を暗殺しました。')
                         this.game.kill = foo;
                         this.game.canKill = false;
                         if (this.game.isFirst) this.game.isFirst = false;
@@ -302,8 +311,8 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                     ) {
                         foo = parseInt((Game.option(msg))[0]);
                         this.game.steal = foo;
-                        this.chat('■泥棒(盗み)');
-                        this.chat('→' + Game.job(foo) + 'から盗みました。');
+                        this.chat('?', 'deeppink', '■泥棒(盗み)');
+                        this.chat('?', 'deeppink', '→' + Game.job(foo) + 'から盗みました。');
                         this.game.canSteal = false;
                         if (this.game.isFirst) this.game.isFirst = false;
                         this.game.phase = Phase.Main;
@@ -330,8 +339,9 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                         this.game.playerList[msg[1]].hand = foo;
                         this.game.canTrade = false;
                         this.game.canReplace = false;
-                        this.chat('■魔術師(交換)');
+                        this.chat('?', 'deeppink', '■魔術師(交換)');
                         this.chat(
+                            '?', 'deeppink',
                             '→' + this.game.playerList[msg[1]].uid
                             + '(' + Game.color(parseInt(msg[1])) + ')と手札を交換しました。'
                         );
@@ -355,9 +365,10 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                         && this.game.playerList[this.game.active].uid === uid
                         && this.game.canReplace
                     ) {
-                        if (this.game.discard === 0) this.chat('■魔術師(入替)');
+                        if (this.game.discard === 0) this.chat('?', 'deeppink', '■魔術師(入替)');
                         foo = Game.option(msg);
                         this.chat(
+                            '?', 'deeppink', 
                             '→「'
                             + Game.build(this.game.playerList[this.game.active].hand[foo[0]])
                             + '」を破棄'
@@ -374,7 +385,7 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                         && this.game.playerList[this.game.active].uid === uid
                         && this.game.canReplace
                     ) {
-                        this.chat('→山札から' + this.game.discard + '枚引きました。');
+                        this.chat('?', 'deeppink', '→山札から' + this.game.discard + '枚引きました。');
                         while (this.game.discard > 0) {
                             this.game.playerList[this.game.active].hand.push(this.game.deck.shift());
                             this.game.discard--;
@@ -399,8 +410,8 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                                 || this.game.playerList[this.game.active].build[i] === Card.MagicSchool
                             ) foo++;
                         }
-                        this.chat('■国王(黄コイン)');
-                        this.chat('→コインを' + foo + '枚貰いました。');
+                        this.chat('?', 'deeppink', '■国王(黄コイン)');
+                        this.chat('?', 'deeppink', '→コインを' + foo + '枚貰いました。');
                         this.game.playerList[this.game.active].coin += foo;
                         this.game.canYellowCoin = false;
                         if (this.game.isFirst) this.game.isFirst = false;
@@ -420,8 +431,8 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                                 || this.game.playerList[this.game.active].build[i] === Card.MagicSchool
                             ) foo++;
                         }
-                        this.chat('■伝道師(青コイン)');
-                        this.chat('→コインを' + foo + '枚貰いました。');
+                        this.chat('?', 'deeppink', '■伝道師(青コイン)');
+                        this.chat('?', 'deeppink', '→コインを' + foo + '枚貰いました。');
                         this.game.playerList[this.game.active].coin += foo;
                         this.game.canBlueCoin = false;
                         if (this.game.isFirst) this.game.isFirst = false;
@@ -434,8 +445,8 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                         && this.game.playerList[this.game.active].uid === uid
                         && this.game.canGet1Coin
                     ) {
-                        this.chat('■商人(1コイン)');
-                        this.chat('→コインを1枚貰いました。');
+                        this.chat('?', 'deeppink', '■商人(1コイン)');
+                        this.chat('?', 'deeppink', '→コインを1枚貰いました。');
                         this.game.playerList[this.game.active].coin += 1;
                         this.game.canGet1Coin = false;
                         if (this.game.isFirst) this.game.isFirst = false;
@@ -455,8 +466,8 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                                 || this.game.playerList[this.game.active].build[i] === Card.MagicSchool
                             ) foo++;
                         }
-                        this.chat('■商人(緑コイン)');
-                        this.chat('→コインを' + foo + '枚貰いました。');
+                        this.chat('?', 'deeppink', '■商人(緑コイン)');
+                        this.chat('?', 'deeppink', '→コインを' + foo + '枚貰いました。');
                         this.game.playerList[this.game.active].coin += foo;
                         this.game.canGreenCoin = false;
                         if (this.game.isFirst) this.game.isFirst = false;
@@ -469,8 +480,8 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                         && this.game.playerList[this.game.active].uid === uid
                         && this.game.canDraw2Cards
                     ) {
-                        this.chat('■建築家(2カード)');
-                        this.chat('→山札から2枚引きました。');
+                        this.chat('?', 'deeppink', '■建築家(2カード)');
+                        this.chat('?', 'deeppink', '→山札から2枚引きました。');
                         this.game.playerList[this.game.active].hand.push(this.game.deck.shift());
                         this.game.playerList[this.game.active].hand.push(this.game.deck.shift());
                         this.game.canDraw2Cards = false;
@@ -495,8 +506,9 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                     ) {
                         this.game.canDestroy = false;
                         foo = Game.option(msg);
-                        this.chat('■傭兵(破壊)');
+                        this.chat('?', 'deeppink', '■傭兵(破壊)');
                         this.chat(
+                            '?', 'deeppink', 
                             '→' + this.game.playerList[foo[0]].uid + '('
                             + Game.color(parseInt(foo[0])) + ')の「'
                             + Game.build(this.game.playerList[foo[0]].build[foo[1]])
@@ -549,8 +561,8 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                                 || this.game.playerList[this.game.active].build[i] === Card.MagicSchool
                             ) foo++;
                         }
-                        this.chat('■傭兵(赤コイン)');
-                        this.chat('→コインを' + foo + '枚貰いました。');
+                        this.chat('?', 'deeppink', '■傭兵(赤コイン)');
+                        this.chat('?', 'deeppink', '→コインを' + foo + '枚貰いました。');
                         this.game.playerList[this.game.active].coin += foo;
                         this.game.canRedCoin = false;
                         if (this.game.isFirst) this.game.isFirst = false;
@@ -565,11 +577,12 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                         this.game.playerList[this.game.cemeteryOwner].coin--;
                         this.game.playerList[this.game.cemeteryOwner].hand.push(this.game.cemeteryCard);
                         this.chat(
+                            '?', 'deeppink', 
                             '■墓地 [' + this.game.playerList[this.game.cemeteryOwner].uid
                             + '(' + Game.color(this.game.cemeteryOwner) + ')]'
                         );
-                        this.chat('→１コイン支払いました。');
-                        this.chat('→破壊されたカードを手札に加えました。');
+                        this.chat('?', 'deeppink', '→１コイン支払いました。');
+                        this.chat('?', 'deeppink', '→破壊されたカードを手札に加えました。');
                         this.game.cemeteryCard = -1;
                         this.game.phase = Phase.Main;
                     }
@@ -602,11 +615,12 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                         foo = Game.option(msg);
                         this.chat('■研究所');
                         this.chat(
+                            '?', 'deeppink', 
                             '→「'
                             + Game.build(this.game.playerList[this.game.active].hand[foo[0]])
                             + '」を捨てました。'
                         );
-                        this.chat('→コインを1枚貰いました。');
+                        this.chat('?', 'deeppink', '→コインを1枚貰いました。');
                         this.game.deck.push(
                             (this.game.playerList[this.game.active].hand.splice(foo[0], 1))[0]
                         );
@@ -624,8 +638,8 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                         && this.game.canSmith
                     ) {
                         this.game.playerList[this.game.smithOwner].coin -= 3;
-                        this.chat('■鍛冶屋');
-                        this.chat('→山札から2枚引きました。');
+                        this.chat('?', 'deeppink', '■鍛冶屋');
+                        this.chat('?', 'deeppink', '→山札から2枚引きました。');
                         this.game.playerList[this.game.active].hand.push(this.game.deck.shift());
                         this.game.playerList[this.game.active].hand.push(this.game.deck.shift());
                         this.game.canSmith = false;
@@ -638,6 +652,34 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
     }
 }
 
+AyatsuriNingen.prototype.onChat = function (user, msg) {
+    var i, color = 'white';
+
+    for (i = 0; i < this.game.playerList.length && color === 'white'; i++) {
+        if (this.game.playerList[i].uid === user.uid) {
+            switch (i) {
+                case 0:
+                    color = 'red';
+                    break;
+                case 1:
+                    color = 'dodgerblue';
+                    break;
+                case 2:
+                    color = 'yellow';
+                    break;
+                case 3:
+                    color = 'green';
+                    break;
+                case 4:
+                    color = 'orchid';
+                    break;
+            }
+        }
+    }
+
+    this.chat(user.uid, color, (msg.split('<').join('&lt;')).split('>').join('&gt;'));
+}
+
 AyatsuriNingen.prototype.onCommand = function (user, msg) {
     this.basicCommand(user, msg);
     switch (msg[0]) {
@@ -645,9 +687,9 @@ AyatsuriNingen.prototype.onCommand = function (user, msg) {
             if (this.ctrlr !== null && this.ctrlr.uid === user.uid) {
                 Game.clear(this.game);
                 this.broadcast(JSON.stringify(this.game));
-                this.chat('ゲームをリセットしました。');
+                this.chat('?', 'deeppink', 'ゲームをリセットしました。');
             } else {
-                this.chat('管理者でないためリセットできません。');
+                this.chat('?', 'deeppink', '管理者でないためリセットできません。');
             }
             break;
     }

@@ -8,9 +8,7 @@ var WebSocketServer = require('ws').Server
    , AyatsuriNingen = require('./ayatsuriningen/AyatsuriNingen')
    , Xors = require('./Xors');
 
-Xors.seed0(123456789);
-Xors.seed1(987654321);
-Xors.skip(100000);
+Xors.seed(918237);
 
 var instanceList = [
       new BattleRaiso()
@@ -33,14 +31,8 @@ var User = function (ws, uid, trip) {
     this.trip = trip;
 }
 
-var splitForSyntax1 = function (src) {
+var splitSyntax1 = function (src) {
     return src.substring(1);
-}
-
-var splitForSyntax2 = function (src) {
-    var result = /^([^ ]*) ?(.*)$/.exec(src.substring(1));
-    result.shift();
-    return result;
 }
 
 var sendUserList = function (instanceIdx, ws) {
@@ -55,7 +47,7 @@ var sendUserList = function (instanceIdx, ws) {
     }
 
     try {
-        ws.send('B' + result);
+        ws.send('A' + result);
     } catch (e) {
     }
 }
@@ -72,7 +64,7 @@ var createTrip = function (src) {
 var login = function (instanceIdx, ws, msg) {
     var tmp, uid, src, user, trip, i, isSuccessful, result;
 
-    tmp = (splitForSyntax1(msg)).split('#', 2);
+    tmp = (splitSyntax1(msg)).split('#', 2);
     uid = tmp[0];
     if (tmp.length > 1) src = tmp[1];
 
@@ -100,16 +92,16 @@ var login = function (instanceIdx, ws, msg) {
             else
                 trip = '';
             if (trip !== '')
-                ws.send('C' + uid + '%' + trip);
+                ws.send('B' + uid + '%' + trip);
             else
-                ws.send('C' + uid);
+                ws.send('B' + uid);
             sendUserList(instanceIdx, ws);
             user = new User(ws, uid, trip);
             instanceList[instanceIdx].userList.push(user);
             if (user.trip !== '')
-                instanceList[instanceIdx]._broadcast('E' + user.uid + '%' + user.trip);
+                instanceList[instanceIdx]._broadcast('D' + user.uid + '%' + user.trip);
             else
-                instanceList[instanceIdx]._broadcast('E' + user.uid);
+                instanceList[instanceIdx]._broadcast('D' + user.uid);
 
             if (instanceList[instanceIdx].ctrlr !== null) {
                 console.log(instanceList[instanceIdx].ctrlr.uid);
@@ -119,7 +111,7 @@ var login = function (instanceIdx, ws, msg) {
         }
     } else {
         try {
-            ws.send('D');
+            ws.send('C');
         } catch (e) {
         }
     }
@@ -149,7 +141,18 @@ wss.on('connection', function (ws) {
 
         msg = msg.substring(1);
 
-        if (instanceIdx >= instanceList.length || msg.length === 0) return;
+        if (instanceIdx === 100) {
+            result = [];
+            for (i = 0; i < instanceList.length; i++)
+                result.push({ index: parseInt(i), title: instanceList[i].title, count: instanceList[i].userList.length });
+            try {
+                ws.send(String.fromCharCode(0) + JSON.stringify(result));
+            } catch (e) {
+            }
+            return;
+        } else if (instanceIdx >= instanceList.length || msg.length === 0) {
+            return;
+        }
 
         for (i in instanceList[instanceIdx].userList) {
             if (ws === instanceList[instanceIdx].userList[i].ws) {
@@ -163,39 +166,27 @@ wss.on('connection', function (ws) {
         if (user.uid === 'UNKNOWN') {
             switch (msg[0]) {
                 case 'a':
-                    result = [];
-                    for (i = 0; i < instanceList.length; i++)
-                        result.push({ index: parseInt(i), title: instanceList[i].title, count: instanceList[i].userList.length });
-                    try {
-                        ws.send('A' + JSON.stringify(result));
-                    } catch (e) {
-                    }
-                    break;
-                case 'b':
                     sendUserList(instanceIdx, ws);
                     break;
-                case 'c':
+                case 'b':
                     login(instanceIdx, ws, msg);
                     break;
             }
         } else {
             switch (msg[0]) {
+                case 'c':
+                    option = splitSyntax1(msg);
+                    instanceList[instanceIdx].onChat(user, option);
+                    if (option.length > 1 && option[0] === '/')
+                        instanceList[instanceIdx].onCommand(user, option.split(' '));
+                    break;
                 case 'd':
-                    instanceList[instanceIdx]._broadcast('G' + user.uid);
-                    break;
-                case 'e':
-                    option = splitForSyntax1(msg);
-                    instanceList[instanceIdx]._broadcast('H' + user.uid + ' ' + (option.split('<').join('&lt;')).split('>').join('&gt;'));
-                    if (option.length > 1 && option[0] === '/') instanceList[instanceIdx].onCommand(user, option.split(' '));
-                    break;
-                case 'f':
-                    option = splitForSyntax1(msg);
+                    option = splitSyntax1(msg);
                     instanceList[instanceIdx].onMessage(user.uid, option);
                     break;
             }
         }
     });
-
 });
 
 server.listen(7911);
