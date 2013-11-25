@@ -5,10 +5,7 @@ var WebSocketServer = require('ws').Server
    , Instance = require('./Instance')
    , BattleRaiso = require('./battleraiso/BattleRaiso')
    , Cataso = require('./cataso/Cataso')
-   , AyatsuriNingen = require('./ayatsuriningen/AyatsuriNingen')
-   , Xors = require('./Xors');
-
-Xors.seed(918237);
+   , AyatsuriNingen = require('./ayatsuriningen/AyatsuriNingen');
 
 var instanceList = [
       new BattleRaiso()

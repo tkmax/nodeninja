@@ -1,6 +1,6 @@
 var Const = require('./Const')
     , Player = require('./Player')
-    , Xors = require('../Xors')
+    , Mt = require('../MersenneTwister')
     , State = Const.State
     , Phase = Const.Phase
     , Resource = Const.Resource
@@ -62,16 +62,16 @@ Game.start = function (game) {
         game.playerNumber = 3;
     else
         game.playerNumber = 4;
-    
+
     for (i = 0; i < 5; i++)
         game.trade.destroy[i] = game.trade.create[i] = 0;
-    
+
     game.dice1 = 0;
     game.dice2 = 0;
     game.trade.target = -1;
     game.largestArmy = -1;
     game.longestRoad = -1;
-    
+
     for (i = 0; i < game.settlementList.length; i++)
         game.settlementList[i] = (SettlementRank.None | 0x00ff);
     for (i = 0; i < game.roadList.length; i++) game.roadList[i] = -1;
@@ -80,12 +80,12 @@ Game.start = function (game) {
     for (i = 0; i < 6; i++) game.harbor.push(i);
     tmp = [];
     while (game.harbor.length > 0) {
-        i = Xors.rand() % game.harbor.length;
+        i = Mt.nextInt(game.harbor.length);
         tmp.push(game.harbor[i]);
         game.harbor.splice(i, 1);
     }
     while (tmp.length > 0) {
-        i = Xors.rand() % tmp.length;
+        i = Mt.nextInt(tmp.length);
         game.harbor.push(tmp[i]);
         tmp.splice(i, 1);
     }
@@ -99,12 +99,12 @@ Game.start = function (game) {
     ];
     tmp.length = 0;
     while (game.tileList.length > 0) {
-        i = Xors.rand() % game.tileList.length;
+        i =Mt.nextInt(game.tileList.length);
         tmp.push(game.tileList[i]);
         game.tileList.splice(i, 1);
     }
     while (tmp.length > 0) {
-        i = Xors.rand() % tmp.length;
+        i = Mt.nextInt(tmp.length);
         game.tileList.push(tmp[i]);
         tmp.splice(i, 1);
     }
@@ -123,12 +123,12 @@ Game.start = function (game) {
     for (i = 0; i < 2; i++) game.card.push(Card.Monopoly);
     tmp.length = 0;
     while (game.card.length > 0) {
-        i = Xors.rand() % game.card.length;
+        i = Mt.nextInt(game.card.length);
         tmp.push(game.card[i]);
         game.card.splice(i, 1);
     }
     while (tmp.length > 0) {
-        i = Xors.rand() % tmp.length;
+        i = Mt.nextInt(tmp.length);
         game.card.push(tmp[i]);
         tmp.splice(i, 1);
     }
@@ -143,13 +143,13 @@ Game.createNumList = function (tileList) {
     do {
         result = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12];
         while (result.length > 0) {
-            i = Xors.rand() % result.length;
+            i = Mt.nextInt(result.length);
             seed.push(result[i]);
             result.splice(i, 1);
         }
         while (seed.length > 0) {
             if (tileList[result.length] === -1) result.push(-1);
-            i = Xors.rand() % seed.length;
+            i = Mt.nextInt(seed.length);
             result.push(seed[i]);
             seed.splice(i, 1);
         }
@@ -387,16 +387,16 @@ Game.robberResource = function (game, playerIdx) {
         for (j = 0; j < game.playerList[playerIdx].resource[i]; j++) foo.push(i);
     }
     while (foo.length > 0) {
-        i = Xors.rand() % foo.length;
+        i = Mt.nextInt(foo.length);
         bar.push(foo[i]);
         foo.splice(i, 1);
     }
     while (bar.length > 0) {
-        i = Xors.rand() % bar.length;
+        i = Mt.nextInt(bar.length);
         foo.push(bar[i]);
         bar.splice(i, 1);
     }
-    i = Xors.rand() % foo.length;
+    i = Mt.nextInt(foo.length);
     Game.huntResource(game, playerIdx, game.active, foo[i], 1);
 }
 
@@ -546,11 +546,13 @@ Game.resource = function (type) {
 }
 
 Game.diceRoll = function () {
-    var result = 6;
+    var src = [
+        1, 2, 3, 4, 5, 6, 6, 5, 4, 3, 2, 1
+    ], ans = [];
 
-    while (result >= 6) result = Xors.rand() % 8;
+    while (src.length > 0) ans.push(src.splice(Mt.nextInt(src.length), 1)[0]);
 
-    return result + 1;
+    return ans[Mt.nextInt(ans.length)];
 }
 
 module.exports = Game;

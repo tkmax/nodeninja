@@ -780,7 +780,7 @@ Cataso.prototype.onChat = function (user, msg) {
                     color = 'yellow';
                     break;
                 case 3:
-                    color = 'green';
+                    color = 'lime';
                     break;
             }
         }

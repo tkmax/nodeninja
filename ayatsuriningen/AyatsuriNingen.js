@@ -613,7 +613,7 @@ AyatsuriNingen.prototype.onMessage = function (uid, msg) {
                         && this.game.canLabo
                     ) {
                         foo = Game.option(msg);
-                        this.chat('■研究所');
+                        this.chat('?', 'deeppink', '■研究所');
                         this.chat(
                             '?', 'deeppink', 
                             '→「'
@@ -668,7 +668,7 @@ AyatsuriNingen.prototype.onChat = function (user, msg) {
                     color = 'yellow';
                     break;
                 case 3:
-                    color = 'green';
+                    color = 'lime';
                     break;
                 case 4:
                     color = 'orchid';

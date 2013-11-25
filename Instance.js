@@ -1,4 +1,4 @@
-var Xors = require('./Xors');
+var Mt = require('./MersenneTwister');
 
 var Instance = function () {
 }
@@ -107,7 +107,7 @@ Instance.prototype.basicCommand = function (user, msg) {
             }
             break;
         case '/dice':
-            this.chat('?', 'deeppink', user.uid + 'のダイス => [' + Xors.rand() % 100 + ']');
+            this.chat('?', 'deeppink', user.uid + 'のダイス => [' + (Mt.nextInt(100) + 1) + ']');
             break;
     }
 }
