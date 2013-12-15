@@ -28,8 +28,8 @@ Player.start = function (player) {
     player.city = 4;
     player.secondSettlement = -1;
     player.isPlayedCard = false;
-    for (i = 0; i < player.harbor.length; i++) player.harbor[i] = false;
-    for (i = 0; i < player.resource.length; i++) player.resource[i] = 0;
+    for (i = player.harbor.length - 1; i >= 0; i--) player.harbor[i] = false;
+    for (i = player.resource.length - 1; i >= 0; i--) player.resource[i] = 0;
     for (i = 0; i < 5; i++) {
         player.sleepCard[i] = 0;
         player.wakeCard[i] = 0;

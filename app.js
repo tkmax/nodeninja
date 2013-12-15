@@ -2,20 +2,15 @@ var WebSocketServer = require('ws').Server
    , http = require('http')
    , server = http.createServer()
    , crypto = require('crypto')
-   , Instance = require('./Instance')
-   , BattleRaiso = require('./battleraiso/BattleRaiso')
-   , Cataso = require('./cataso/Cataso')
-   , AyatsuriNingen = require('./ayatsuriningen/AyatsuriNingen');
+   , Cataso = require('./cataso/Cataso');
 
-var instanceList = [
-      new BattleRaiso()
-    , new BattleRaiso()
-    , new BattleRaiso()
-    , new BattleRaiso()
-    , new AyatsuriNingen()
-    , new AyatsuriNingen()
-    , new AyatsuriNingen()
-    , new AyatsuriNingen()
+var roomList = [
+      new Cataso()
+    , new Cataso()
+    , new Cataso()
+    , new Cataso()
+    , new Cataso()
+    , new Cataso()
     , new Cataso()
     , new Cataso()
     , new Cataso()
@@ -32,15 +27,15 @@ var splitSyntax1 = function (src) {
     return src.substring(1);
 }
 
-var sendUserList = function (instanceIdx, ws) {
+var sendUserList = function (roomIdx, ws) {
     var result = '', i;
 
-    for (i = 0; i < instanceList[instanceIdx].userList.length; i++) {
+    for (i = 0; i < roomList[roomIdx].userList.length; i++) {
         if (i > 0) result += ' ';
-        if (instanceList[instanceIdx].userList[i].trip !== '')
-            result += instanceList[instanceIdx].userList[i].uid + '%' + instanceList[instanceIdx].userList[i].trip;
+        if (roomList[roomIdx].userList[i].trip !== '')
+            result += roomList[roomIdx].userList[i].uid + '%' + roomList[roomIdx].userList[i].trip;
         else
-            result += instanceList[instanceIdx].userList[i].uid;
+            result += roomList[roomIdx].userList[i].uid;
     }
 
     try {
@@ -58,22 +53,21 @@ var createTrip = function (src) {
     return crypted.substr(0, 10);
 }
 
-var login = function (instanceIdx, ws, msg) {
+var login = function (roomIdx, ws, msg) {
     var tmp, uid, src, user, trip, i, isSuccessful, result;
 
     tmp = (splitSyntax1(msg)).split('#', 2);
     uid = tmp[0];
     if (tmp.length > 1) src = tmp[1];
-
     if (
-        uid.length > 0
+           uid.length > 0
         && uid !== 'UNKNOWN'
         && uid.match(/^[0-9A-Za-z]{1,12}$/)
     ) {
         user = null;
-        for (i = 0; i < instanceList[instanceIdx].userList.length; i++) {
-            if (uid === instanceList[instanceIdx].userList[i].uid) {
-                user = instanceList[instanceIdx].userList[i];
+        for (i = 0; i < roomList[roomIdx].userList.length; i++) {
+            if (uid === roomList[roomIdx].userList[i].uid) {
+                user = roomList[roomIdx].userList[i];
                 break;
             }
         }
@@ -92,17 +86,17 @@ var login = function (instanceIdx, ws, msg) {
                 ws.send('B' + uid + '%' + trip);
             else
                 ws.send('B' + uid);
-            sendUserList(instanceIdx, ws);
+            sendUserList(roomIdx, ws);
             user = new User(ws, uid, trip);
-            instanceList[instanceIdx].userList.push(user);
+            roomList[roomIdx].userList.push(user);
             if (user.trip !== '')
-                instanceList[instanceIdx]._broadcast('D' + user.uid + '%' + user.trip);
+                roomList[roomIdx]._broadcast('D' + user.uid + '%' + user.trip);
             else
-                instanceList[instanceIdx]._broadcast('D' + user.uid);
+                roomList[roomIdx]._broadcast('D' + user.uid);
 
-            if (instanceList[instanceIdx].ctrlr !== null) {
-                console.log(instanceList[instanceIdx].ctrlr.uid);
-                ws.send('I' + instanceList[instanceIdx].ctrlr.uid);
+            if (roomList[roomIdx].ctrlr !== null) {
+                console.log(roomList[roomIdx].ctrlr.uid);
+                ws.send('I' + roomList[roomIdx].ctrlr.uid);
             }
         } catch (e) {
         }
@@ -119,13 +113,13 @@ var wss = new WebSocketServer({server:server});
 wss.on('connection', function (ws) {
 
     ws.on('close', function (msg) {
-        var instanceIdx, i, user = null;
+        var roomIdx, i, user = null;
 
-        for (instanceIdx = 0; instanceIdx < instanceList.length; instanceIdx++) {
-            for (i = 0; i < instanceList[instanceIdx].userList.length; i++) {
-                if (ws === instanceList[instanceIdx].userList[i].ws) {
-                    user = instanceList[instanceIdx].userList[i];
-                    instanceList[instanceIdx].removeUser(user);
+        for (roomIdx = 0; roomIdx < roomList.length; roomIdx++) {
+            for (i = 0; i < roomList[roomIdx].userList.length; i++) {
+                if (ws === roomList[roomIdx].userList[i].ws) {
+                    user = roomList[roomIdx].userList[i];
+                    roomList[roomIdx].removeUser(user);
                     break;
                 }
             }
@@ -134,26 +128,32 @@ wss.on('connection', function (ws) {
     });
 
     ws.on('message', function (msg) {
-        var instanceIdx = msg.charCodeAt(0), user = null, i, result, option;
+        var roomIdx = msg.charCodeAt(0), user = null, i, result, option;
 
         msg = msg.substring(1);
 
-        if (instanceIdx === 100) {
-            result = [];
-            for (i = 0; i < instanceList.length; i++)
-                result.push({ index: parseInt(i), title: instanceList[i].title, count: instanceList[i].userList.length });
+        if (roomIdx === 100) {
+            result = String.fromCharCode(100);
+            for (i = 0; i < roomList.length; i++) {
+                result += roomList[i].userList.length + ' ';
+                if (roomList[i].isPlaying)
+                    result += 'p';
+                else
+                    result += 'r';
+                if (i < roomList.length - 1) result += ' ';
+            }
             try {
-                ws.send(String.fromCharCode(0) + JSON.stringify(result));
+                ws.send(result);
             } catch (e) {
             }
             return;
-        } else if (instanceIdx >= instanceList.length || msg.length === 0) {
+        } else if (roomIdx >= roomList.length || msg.length === 0) {
             return;
         }
 
-        for (i in instanceList[instanceIdx].userList) {
-            if (ws === instanceList[instanceIdx].userList[i].ws) {
-                user = instanceList[instanceIdx].userList[i];
+        for (i in roomList[roomIdx].userList) {
+            if (ws === roomList[roomIdx].userList[i].ws) {
+                user = roomList[roomIdx].userList[i];
                 break;
             }
         }
@@ -163,23 +163,23 @@ wss.on('connection', function (ws) {
         if (user.uid === 'UNKNOWN') {
             switch (msg[0]) {
                 case 'a':
-                    sendUserList(instanceIdx, ws);
+                    sendUserList(roomIdx, ws);
                     break;
                 case 'b':
-                    login(instanceIdx, ws, msg);
+                    login(roomIdx, ws, msg);
                     break;
             }
         } else {
             switch (msg[0]) {
                 case 'c':
                     option = splitSyntax1(msg);
-                    instanceList[instanceIdx].onChat(user, option);
+                    roomList[roomIdx].onChat(user, option);
                     if (option.length > 1 && option[0] === '/')
-                        instanceList[instanceIdx].onCommand(user, option.split(' '));
+                        roomList[roomIdx].onCommand(user, option.split(' '));
                     break;
                 case 'd':
                     option = splitSyntax1(msg);
-                    instanceList[instanceIdx].onMessage(user.uid, option);
+                    roomList[roomIdx].onMessage(user.uid, option);
                     break;
             }
         }

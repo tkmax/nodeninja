@@ -198,6 +198,6 @@ MersenneTwister.prototype.next = function() {
 	return (a * 0x4000000 + b) / 0x20000000000000; 
 };
 
-var mt = new MersenneTwister(987654321);
+MersenneTwister.Share = new MersenneTwister();
 
-module.exports = mt;
+module.exports = MersenneTwister;
