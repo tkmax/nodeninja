@@ -315,7 +315,7 @@ Game.robberResource = function (game, playerIdx, mt) {
     var i, j, tmp = [];
 
     for (i = 0; i < 5; i++) {
-        for (j = game.playerList[playerIdx].resource[i]; j >= 0; j--)
+        for (j = game.playerList[playerIdx].resource[i]; j > 0; j--)
             tmp.push(i);
     }
     this.suffle(tmp, mt);
@@ -378,6 +378,7 @@ Game.canBuildSettlements = function (game) {
 
 Game.canBuildCity = function (game, playerIdx) {
     if(game.settlementList[playerIdx] === (SettlementRank.Settlement | game.active)) return true;
+
     return false;
 }
 
