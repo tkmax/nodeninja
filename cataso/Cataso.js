@@ -154,7 +154,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                                     this.game.phase = Phase.Burst;
                                 }
                             }
-                            this.chat('?', 'deeppink', '** 盗賊が発生しました **');
+                            this.chat('?', 'deeppink', '**盗賊が発生しました**');
                             if (this.game.phase !== Phase.Burst) this.game.phase = Phase.Robber1;
                             this.game.sound = 'robber';
                         } else {
@@ -179,7 +179,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                             for (i = hoge.length - 1; i >= 0; i--) {
                                 if (this.game.resource[i] < hoge[i]) {
                                     hoge[i] = -1;
-                                    this.chat('?', 'deeppink', '** 資源不足で' + ResourceName[i] + 'の生産失敗 **');
+                                    this.chat('?', 'deeppink', '**資源不足で' + ResourceName[i] + 'の生産失敗**');
                                 }
                             }
                             for (i = this.game.numList.length - 1; i >= 0; i--) {
@@ -283,8 +283,8 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         if (i !== -1) {
                             this.chat(
                                 '?', 'deeppink',
-                                '** ' + this.game.playerList[i].uid
-                                + '(' + ColorName[i] + ')' + 'が道賞を獲得しました **'
+                                '**' + this.game.playerList[i].uid
+                                + '(' + ColorName[i] + ')' + 'が道賞を獲得しました**'
                             );
                             this.game.sound = 'get';
                         } else {
@@ -313,8 +313,8 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         if (i !== -1) {
                             this.chat(
                                 '?', 'deeppink',
-                                '** ' + this.game.playerList[i].uid
-                                + '(' + ColorName[i] + ')' + 'が道賞を獲得しました **'
+                                '**' + this.game.playerList[i].uid
+                                + '(' + ColorName[i] + ')' + 'が道賞を獲得しました**'
                             );
                             this.game.sound = 'get';
                         } else {
@@ -476,7 +476,7 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         } else {
                             this.chat(
                                 '?', 'deeppink',
-                                +this.game.playerList[this.game.trade.playerIdx].uid
+                                this.game.playerList[this.game.trade.playerIdx].uid
                                 + '(' + ColorName[this.game.trade.playerIdx]
                                 + ')の資源不足のため交換できません。'
                             );
@@ -491,8 +491,8 @@ Cataso.prototype.onMessage = function (uid, msg) {
                     ) {
                         this.chat(
                             '?', 'deeppink',
-                            '** ' + this.game.playerList[this.game.active].uid
-                            + '(' + ColorName[this.game.active] + ')が勝利しました **'
+                            '**' + this.game.playerList[this.game.active].uid
+                            + '(' + ColorName[this.game.active] + ')が勝利しました**'
                         );
                         for (i = this.game.playerNumber - 1; i >= 0; i--) this.game.playerList[i].uid = '';
                         this.game.playerNumber = 4;
@@ -532,8 +532,8 @@ Cataso.prototype.onMessage = function (uid, msg) {
                                 this.game.playerList[this.game.active].bonus += 2;
                                 this.chat(
                                     '?', 'deeppink',
-                                    '** ' + this.game.playerList[this.game.active].uid
-                                    + '(' + ColorName[this.game.active] + ')' + 'が騎士賞を獲得しました **'
+                                    '**' + this.game.playerList[this.game.active].uid
+                                    + '(' + ColorName[this.game.active] + ')' + 'が騎士賞を獲得しました**'
                                 );
                                 this.game.sound = 'get';
                             }
@@ -546,8 +546,8 @@ Cataso.prototype.onMessage = function (uid, msg) {
                             this.game.playerList[this.game.active].bonus += 2;
                             this.chat(
                                 '?', 'deeppink',
-                                '** ' + this.game.playerList[this.game.active].uid
-                                + '(' + ColorName[this.game.active] + ')' + 'が騎士賞を獲得しました **'
+                                '**' + this.game.playerList[this.game.active].uid
+                                + '(' + ColorName[this.game.active] + ')' + 'が騎士賞を獲得しました**'
                             );
                             this.game.sound = 'get';
                         }
@@ -618,9 +618,9 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         if (i !== -1) {
                             this.chat(
                                 '?', 'deeppink',
-                                '** ' + this.game.playerList[i].uid
+                                '**' + this.game.playerList[i].uid
                                 + '(' + ColorName[i] + ')'
-                                + 'が道賞を獲得しました **'
+                                + 'が道賞を獲得しました**'
                             );
                             this.game.sound = 'get';
                         } else {
@@ -646,9 +646,9 @@ Cataso.prototype.onMessage = function (uid, msg) {
                         if (i !== -1) {
                             this.chat(
                                 '?', 'deeppink',
-                                '** ' + this.game.playerList[foo].uid
+                                '**' + this.game.playerList[i].uid
                                 + '(' + ColorName[i] + ')'
-                                + 'が道賞を獲得しました **'
+                                + 'が道賞を獲得しました**'
                             );
                             this.game.sound = 'get';
                         } else {
