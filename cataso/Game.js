@@ -443,12 +443,12 @@ Game.sumResource = function (game) {
 }
 
 Game.diceRoll = function (mt) {
-    var foo = [1, 2, 3, 4, 5, 6, 6, 5, 4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 6, 5, 4, 3, 2, 1], bar = [];
+    var foo = [1, 2, 3, 4, 5, 6, 6, 5, 4, 3, 2, 1], bar = [];
 
     while (foo.length > 0)
         bar.push(foo.splice(mt.nextInt(foo.length), 1)[0]);
 
-    return bar.splice(mt.nextInt(bar.length), 1)[0];
+    return bar[mt.nextInt(bar.length)];
 }
 
 module.exports = Game;
