@@ -4,6 +4,8 @@ var WebSocketServer = require('ws').Server
    , crypto = require('crypto')
    , Cataso = require('./cataso/Cataso');
 
+//
+
 var roomList = [
       new Cataso()
     , new Cataso()
