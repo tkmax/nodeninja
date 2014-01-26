@@ -2,12 +2,15 @@ var WebSocketServer = require('ws').Server
    , http = require('http')
    , server = http.createServer()
    , crypto = require('crypto')
-   , Cataso = require('./cataso/Cataso');
+   , Cataso = require('./cataso/Cataso')
+   , Acquiso = require('./acquiso/Acquiso');
 
 var roomList = [
       new Cataso()
     , new Cataso()
     , new Cataso()
+    , new Acquiso()
+    , new Acquiso()
     , new Cataso()
     , new Cataso()
     , new Cataso()
@@ -15,6 +18,14 @@ var roomList = [
     , new Cataso()
     , new Cataso()
     , new Cataso()
+    , new Cataso()
+    , new Cataso()
+    , new Cataso()
+    , new Acquiso()
+    , new Acquiso()
+    , new Acquiso()
+    , new Acquiso()
+    , new Acquiso()
 ];
 
 var User = function (ws, uid, trip) {
@@ -93,7 +104,6 @@ var login = function (roomIdx, ws, msg) {
                 roomList[roomIdx]._broadcast('D' + user.uid + '%' + user.trip);
             else
                 roomList[roomIdx]._broadcast('D' + user.uid);
-
             if (roomList[roomIdx].ctrlr !== null) {
                 console.log(roomList[roomIdx].ctrlr.uid);
                 ws.send('I' + roomList[roomIdx].ctrlr.uid);
@@ -136,6 +146,7 @@ wss.on('connection', function (ws) {
             result = String.fromCharCode(100);
             for (i = 0; i < roomList.length; i++) {
                 result += roomList[i].userList.length + ' ';
+                result += roomList[i].symbol + ' ';
                 if (roomList[i].isPlaying)
                     result += 'p';
                 else

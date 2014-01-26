@@ -7,7 +7,8 @@ Room.prototype.title = null;
 Room.prototype.userList = null;
 Room.prototype.ctrlr = null;
 
-Room.prototype.initialize = function () {
+Room.prototype.initialize = function (symbol) {
+    this.symbol = symbol;
     this.userList = [];
     this.ctrlr = null;
     this.isPlaying = false;
@@ -75,19 +76,11 @@ Room.prototype.onMessage = function (uid, msg) { }
 Room.prototype.onCommand = function (user, msg) { }
 
 Room.prototype.onChat = function (user, msg) {
-    this.chat(
-        user.uid, 'white', (msg.split('<').join('&lt;')).split('>').join('&gt;')
-    );
+    this.chat(user.uid, 'white', (msg.split('<').join('&lt;')).split('>').join('&gt;'));
 }
 
 Room.prototype.basicCommand = function (user, msg) {
     switch (msg[0]) {
-        case '/title':
-            if (msg.length > 1) {
-                this.title = msg[1].substring(0, 15);
-                this.chat('?', 'deeppink', 'タイトルが「' + this.title + '」に変更されました。');
-            }
-            break;
         case '/grant':
             if (this.ctrlr === null) {
                 this.ctrlr = user;

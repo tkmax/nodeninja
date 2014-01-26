@@ -17,7 +17,7 @@ var Room = require('../Room')
     , ResourceName = Const.ResourceName;
 
 var Cataso = function () {
-    this.initialize();
+    this.initialize('c');
     this.game = new Game();
     this.mt = new MersenneTwister();
     Game.clear(this.game);
