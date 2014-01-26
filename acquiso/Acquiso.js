@@ -421,6 +421,7 @@ Acquiso.prototype.onMessage = function (uid, msg) {
                             for (i = this.game.playerNumber - 1; i >= 0; i--)
                                 this.game.playerList[i].uid = '';
                             this.game.state = State.Ready;
+                            this.isPlaying = false;
                         }
                         break;
                 }
