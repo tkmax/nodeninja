@@ -171,8 +171,8 @@ Acquiso.prototype.winnerChat = function () {
     }
 
     this.chat(
-        '?', 'deeppink'
-        , '++ おめでとう 勝利 ++'
+        '?', 'orange'
+        , '++おめでとう 勝利++'
     );
 
     for (i = 0; i < winner.length; i++) {
@@ -215,7 +215,7 @@ Acquiso.prototype.onMessage = function (uid, msg) {
                         this.isPlaying = true;
                         Game.start(this.game, this.mt);
                         this.chat(
-                            '?', 'deeppink'
+                            '?', 'orange'
                             , '--「' + this.game.playerList[this.game.active].uid
                               + '(' + ColorName[this.game.active] + ')」ターン--'
                         );
@@ -398,7 +398,7 @@ Acquiso.prototype.onMessage = function (uid, msg) {
                             Game.drawTile(this.game, this.game.priority);
                             this.game.active = (this.game.active + 1) % this.game.playerNumber;
                             this.chat(
-                                '?', 'deeppink'
+                                '?', 'orange'
                                 , '--「' + this.game.playerList[this.game.active].uid
                                   + '(' + ColorName[this.game.active] + ')」ターン--'
                             );
@@ -412,8 +412,8 @@ Acquiso.prototype.onMessage = function (uid, msg) {
                         if (this.game.phase === Phase.Buy) {
                             this.game.sound = 'finish';
                             this.chat(
-                                '?', 'deeppink'
-                                , '**決済宣言**'
+                                '?', 'orange'
+                                , '--決済宣言--'
                             );
                             this.settleChat();
                             Game.settle(this.game);
@@ -427,8 +427,7 @@ Acquiso.prototype.onMessage = function (uid, msg) {
                 }
             }
         }
-
-        this.unicast(uid, JSON.stringify(this.game));
+        this.broadcast(JSON.stringify(this.game));
         this.game.sound = '';
     }
 }
