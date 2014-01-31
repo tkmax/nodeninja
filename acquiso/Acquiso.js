@@ -3,6 +3,7 @@ var Room = require('../Room')
     , Player = require('./Player')
     , Game = require('./Game')
     , MersenneTwister = require('../MersenneTwister')
+    , FontColor = Const.FontColor
     , State = Const.State
     , Phase = Const.Phase
     , ColorName = Const.ColorName
@@ -172,7 +173,7 @@ Acquiso.prototype.winnerChat = function () {
 
     this.chat(
         '?', 'orange'
-        , '++おめでとう 勝利++'
+        , '++勝利 おめでとう++'
     );
 
     for (i = 0; i < winner.length; i++) {
@@ -314,11 +315,9 @@ Acquiso.prototype.onMessage = function (uid, msg) {
                                 if (option[i] !== '0') {
                                     j = parseInt(option[i]);
                                     this.chat(
-                                        '?', 'deeppink'
-                                        , '「' + this.game.playerList[this.game.priority].uid
-                                          + '(' + ColorName[this.game.priority] + ')」:'
-                                          + '「' + HotelChainName[i] + '」' + option[i] + '枚'
-                                          + ' 売却 $' + Game.getStockPrice(this.game, i) * j
+                                        '?', FontColor[this.game.priority]
+                                        , '売却:「' + HotelChainName[i] + '」' + option[i]
+                                          + '枚→$' + Game.getStockPrice(this.game, i) * j
                                     );
                                     Game.sellCertificate(this.game, i, j);
                                 }
@@ -332,26 +331,24 @@ Acquiso.prototype.onMessage = function (uid, msg) {
                     case 'o':
                         if (this.game.phase === Phase.Trade) {
                             this.chat(
-                                '?', 'deeppink'
-                                , '「' + this.game.playerList[this.game.priority].uid
-                                  + '(' + ColorName[this.game.priority] + ')」交換'
+                                '?', FontColor[this.game.priority]
+                                , '交換:'
                             );
-                            this.chat('?', 'deeppink', '(出):');
                             for (i = 0; i < 7; i++) {
                                 if (option[i] !== '0') {
                                     this.chat(
-                                        '?', 'deeppink'
+                                        '?', FontColor[this.game.priority]
                                         , '「' + HotelChainName[i] + '」' + option[i] + '枚'
                                     );
                                     Game.loseCertificate(this.game, i, parseInt(option[i]));
                                 }
                             }
-                            this.chat('?', 'deeppink', '(入):');
+                            this.chat('?', FontColor[this.game.priority], '↓');
                             for (i = 7; i < 14; i++) {
                                 if (option[i] !== '0') {
                                     j = i - 7;
                                     this.chat(
-                                        '?', 'deeppink'
+                                        '?', FontColor[this.game.priority]
                                         , '「' + HotelChainName[j] + '」' + option[i] + '枚'
                                     );
                                     Game.gainCertificate(this.game, j, parseInt(option[i]));
@@ -386,7 +383,7 @@ Acquiso.prototype.onMessage = function (uid, msg) {
                                     this.game.buyTicket -= parseInt(option[i]);
                                     this.chat(
                                         '?', 'deeppink'
-                                        , '「' + HotelChainName[i] + '」' + option[i] + '枚 購入'
+                                        , '購入:「' + HotelChainName[i] + '」' + option[i] + '枚'
                                     );
                                 }
                             }
@@ -435,22 +432,10 @@ Acquiso.prototype.onMessage = function (uid, msg) {
 Acquiso.prototype.onChat = function (user, msg) {
     var i, color = 'white';
 
-    for (i = 0; i < this.game.playerList.length && color === 'white'; i++) {
+    for (i = 0; i < this.game.playerList.length; i++) {
         if (this.game.playerList[i].uid === user.uid) {
-            switch (i) {
-                case 0:
-                    color = 'red';
-                    break;
-                case 1:
-                    color = 'dodgerblue';
-                    break;
-                case 2:
-                    color = 'yellow';
-                    break;
-                case 3:
-                    color = 'lime';
-                    break;
-            }
+            color = FontColor[i];
+            break;
         }
     }
 

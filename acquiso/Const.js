@@ -1,5 +1,12 @@
 var Const = function () { }
 
+Const.FontColor = [
+    'red'
+    , 'dodgerblue'
+    , 'yellow'
+    , 'lime'
+];
+
 Const.Index = function () { }
 Const.Index.None = -1;
 

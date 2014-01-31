@@ -109,12 +109,11 @@ Game.playHotelChain = function (game, type) {
 }
 
 Game.repaintPlayedHotelChain = function (game) {
-    var i, hotelChain, position;
+    var i, hotelChain = game.hotelChain, position;
 
     for (i = game.map.length - 1; i >= 0; i--)
         game.map[i].hotelChain = HotelChain.None;
 
-    hotelChain = game.hotelChain;
     for (i = hotelChain.length - 1; i >= 0; i--) {
         position = hotelChain[i].position;
         if (position !== Position.None)
@@ -240,20 +239,16 @@ Game.getMinorityBonus = function (game, type) {
 }
 
 Game.setMajorityAndMinority = function (game, type) {
-    var i, num, max = 0
-        , majority = game.hotelChain[type].majority
-        , minority = game.hotelChain[type].minority;
-
-    majority.length = minority.length = 0;
+    var i, num, max = 0, majority = [], minority = [];
 
     for (i = game.playerNumber - 1; i >= 0; i--) {
         num = game.playerList[i].certificate[type];
         if (num > 0) {
             if (num > max) {
-                game.hotelChain[type].minority = majority;
+                max = num;
+                minority = majority;
                 majority = [];
                 majority.push(i);
-                game.hotelChain[type].majority = majority;
             } else if (num === max) {
                 majority.push(i);
             } else if (
@@ -264,6 +259,9 @@ Game.setMajorityAndMinority = function (game, type) {
             }
         }
     }
+
+    game.hotelChain[type].majority = majority;
+    game.hotelChain[type].minority = minority;
 }
 
 Game.buyCertificate = function (game, type, num) {
