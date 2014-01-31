@@ -153,12 +153,18 @@ Game.paintPlayedHotelChain = function (game, i, type, size) {
 }
 
 Game.drawTile = function (game, index) {
-    var player = game.playerList[index];
+    var player = game.playerList[index], tile;
+
+    player.fresh.length = 0;
 
     while (
            game.deck.length > 0
         && player.hand.length < 6
-    ) player.hand.push(game.deck.shift());
+    ) {
+        tile = game.deck.shift();
+        player.hand.push(tile);
+        player.fresh.push(tile);
+    }
 
     player.hand.sort(function (a, b) { return a - b; });
 }
@@ -518,6 +524,7 @@ Game.start = function (game, mt) {
     for (i = game.playerList.length - 1; i >= 0; i--) {
         Player.start(game.playerList[i]);
         this.drawTile(game, i);
+        game.playerList[i].fresh.length = 0;
     }
     for (i = game.certificate.length - 1; i >= 0; i--) game.certificate[i] = 25;
     game.justPlayTile = Position.None;
