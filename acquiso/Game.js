@@ -245,22 +245,26 @@ Game.getMinorityBonus = function (game, type) {
 }
 
 Game.setMajorityAndMinority = function (game, type) {
-    var i, num, max = 0, majority = [], minority = [];
+    var i, size, majoritySize = 0, minoritySize = 0
+        , majority = [], minority = [];
 
     for (i = game.playerNumber - 1; i >= 0; i--) {
-        num = game.playerList[i].certificate[type];
-        if (num > 0) {
-            if (num > max) {
-                max = num;
+        size = game.playerList[i].certificate[type];
+        
+        if (size > 0) {
+            if (size > majoritySize) {
+                minoritySize = majoritySize;
+                majoritySize = size;
                 minority = majority;
                 majority = [];
                 majority.push(i);
-            } else if (num === max) {
+            } else if (size === majoritySize) {
                 majority.push(i);
-            } else if (
-                   minority.length === 0
-                || num === game.playerList[minority[0]].certificate[type]
-            ) {
+            } else if (size > minoritySize) {
+                minoritySize = size;
+                minority.length = 0;
+                minority.push(i);
+            } else if(size === minoritySize) {
                 minority.push(i);
             }
         }

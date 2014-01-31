@@ -47,15 +47,18 @@ Acquiso.prototype.mergeHotelChainChat = function () {
                 minority = hotelChain[i].minority;
                 majorityBonus = Game.getMajorityBonus(this.game, i);
                 minorityBonus = Game.getMinorityBonus(this.game, i);
-                if (minority.length === 0) majorityBonus += minorityBonus;
 
                 if (majority.length === 1) {
+                    if (minority.length === 0)
+                        majorityBonus += minorityBonus;
+
                     this.chat(
                         '?', 'deeppink'
                         , '筆頭株主「' + this.game.playerList[majority[0]].uid
                           + '(' + ColorName[majority[0]] + ')」'
                           + '$' + majorityBonus
                     );
+
                     if (minority.length > 0) {
                         minorityBonus
                             = Math.floor(minorityBonus / minority.length / 100) * 100;
@@ -104,15 +107,18 @@ Acquiso.prototype.settleChat = function () {
                 minority = hotelChain[i].minority;
                 majorityBonus = Game.getMajorityBonus(this.game, i);
                 minorityBonus = Game.getMinorityBonus(this.game, i);
-                if (minority.length === 0) majorityBonus += minorityBonus;
 
                 if (majority.length === 1) {
+                    if (minority.length === 0)
+                        majorityBonus += minorityBonus;
+
                     this.chat(
                         '?', 'deeppink'
                         , '筆頭株主「' + this.game.playerList[majority[0]].uid
                           + '(' + ColorName[majority[0]] + ')」'
                           + '$' + majorityBonus
                     );
+
                     if (minority.length > 0) {
                         minorityBonus
                             = Math.floor(minorityBonus / minority.length / 100) * 100;
