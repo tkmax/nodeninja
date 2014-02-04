@@ -53,7 +53,7 @@ Acquiso.prototype.mergeHotelChainChat = function () {
                         majorityBonus += minorityBonus;
 
                     this.chat(
-                        '?', 'deeppink'
+                        '?', FontColor[majority[0]]
                         , '筆頭株主「' + this.game.playerList[majority[0]].uid
                           + '(' + ColorName[majority[0]] + ')」'
                           + '$' + majorityBonus
@@ -65,8 +65,8 @@ Acquiso.prototype.mergeHotelChainChat = function () {
 
                         for (j = 0; j < minority.length; j++) {
                             this.chat(
-                                '?', 'deeppink'
-                                , '第二株主「' + this.game.playerList[minority[j]].uid
+                                '?', FontColor[minority[j]]
+                                , '次席株主「' + this.game.playerList[minority[j]].uid
                                   + '(' + ColorName[minority[j]] + ')」'
                                   + '$' + minorityBonus
                             );
@@ -78,7 +78,7 @@ Acquiso.prototype.mergeHotelChainChat = function () {
 
                     for (j = 0; j < majority.length; j++) {
                         this.chat(
-                            '?', 'deeppink'
+                            '?', FontColor[majority[j]]
                             , '筆頭株主「' + this.game.playerList[majority[j]].uid
                               + '(' + ColorName[majority[j]] + ')」'
                               + '$' + majorityBonus
@@ -113,7 +113,7 @@ Acquiso.prototype.settleChat = function () {
                         majorityBonus += minorityBonus;
 
                     this.chat(
-                        '?', 'deeppink'
+                        '?', FontColor[majority[0]]
                         , '筆頭株主「' + this.game.playerList[majority[0]].uid
                           + '(' + ColorName[majority[0]] + ')」'
                           + '$' + majorityBonus
@@ -125,8 +125,8 @@ Acquiso.prototype.settleChat = function () {
 
                         for (j = 0; j < minority.length; j++) {
                             this.chat(
-                                '?', 'deeppink'
-                                , '第二株主「' + this.game.playerList[minority[j]].uid
+                                '?', FontColor[minority[j]]
+                                , '次席株主「' + this.game.playerList[minority[j]].uid
                                   + '(' + ColorName[minority[j]] + ')」'
                                   + '$' + minorityBonus
                             );
@@ -138,7 +138,7 @@ Acquiso.prototype.settleChat = function () {
 
                     for (j = 0; j < majority.length; j++) {
                         this.chat(
-                            '?', 'deeppink'
+                            '?', FontColor[majority[j]]
                             , '筆頭株主「' + this.game.playerList[majority[j]].uid
                               + '(' + ColorName[majority[j]] + ')」'
                               + '$' + majorityBonus
@@ -151,7 +151,7 @@ Acquiso.prototype.settleChat = function () {
 
                 if (playerCertificateNumber > 0) {
                     this.chat(
-                        '?', 'deeppink'
+                        '?', FontColor[j]
                         , '「' + this.game.playerList[j].uid
                           + '(' + ColorName[j] + ')」'
                           + playerCertificateNumber + '枚'
@@ -424,6 +424,7 @@ Acquiso.prototype.onMessage = function (uid, msg) {
                             for (i = this.game.playerNumber - 1; i >= 0; i--)
                                 this.game.playerList[i].uid = '';
                             this.game.state = State.Ready;
+                            this.game.playerNumber = 4;
                             this.isPlaying = false;
                         }
                         break;
