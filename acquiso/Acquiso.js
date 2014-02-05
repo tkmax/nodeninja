@@ -284,7 +284,7 @@ Acquiso.prototype.onMessage = function (uid, msg) {
                         break;
                     case 'i':
                         if (this.game.phase === Phase.Play) {
-                            this.chat('パス');
+                            this.chat('?', 'deeppink', 'パス');
                             this.game.phase = Phase.Buy;
                         }
                         break;

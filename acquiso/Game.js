@@ -498,10 +498,12 @@ Game.start = function (game, mt) {
 
     mt.setSeed((new Date()).getTime());
     game.state = State.Playing;
-    if (game.playerList[3].uid === '')
+    if (game.playerList[3].uid === '') {
         game.playerNumber = 3;
-    else
+        Player.clear(game.playerList[3]);
+    } else {
         game.playerNumber = 4;
+    }
     game.phase = Phase.Play;
     game.active = 0;
     game.priority = 0;
@@ -525,7 +527,7 @@ Game.start = function (game, mt) {
         });
     }
     for (i = 0; i < game.playerNumber; i++) game.map[game.deck.shift()].isCover = true;
-    for (i = game.playerList.length - 1; i >= 0; i--) {
+    for (i = 0; i < game.playerNumber; i++) {
         Player.start(game.playerList[i]);
         this.drawTile(game, i);
         game.playerList[i].fresh.length = 0;
