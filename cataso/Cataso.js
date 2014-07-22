@@ -176,7 +176,7 @@ Cataso.prototype.onMessage = function (uid, message) {
                             if (game.phase === Phase.SETUP_SETTLEMENT1) {
                                 that.chat('?', 'deeppink', '家を配置しました。');
                                 
-                                var index = that.split(message)[0];
+                                var index = parseInt(that.split(message)[0]);
                                 Game.buildSettlement(game, index);
                                 
                                 game.phase = Phase.SETUP_ROAD1;
