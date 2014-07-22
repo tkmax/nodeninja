@@ -1,454 +1,483 @@
-var Const = require('./Const')
-    , Player = require('./Player')
-    , State = Const.State
-    , Phase = Const.Phase
-    , Resource = Const.Resource
-    , Card = Const.Card
-    , SettlementRank = Const.SettlementRank
-    , SettlementLink = Const.SettlementLink
-    , TileLink = Const.TileLink
-    , RoadLink = Const.RoadLink
-    , Harbor = Const.Harbor
-    , Sea = Const.Sea;
+var Player = require('./Player');
+var Const = require('./Const');
+var Index = Const.Index;
+var Option = Const.Option;
+var State = Const.State;
+var Phase = Const.Phase;
+var Land = Const.Land;
+var Resource = Const.Resource;
+var Card = Const.Card;
+var SettlementRank = Const.SettlementRank;
+var Harbor = Const.Harbor;
+var ALPHABET_CHIP = Const.ALPHABET_CHIP;
+var ALPHABET_SIGNPOST = Const.ALPHABET_SIGNPOST;
+var ROAD_LINK = Const.ROAD_LINK;
+var SETTLEMENT_LINK = Const.SETTLEMENT_LINK;
 
 var Game = function () { }
 
-Game.option = function (msg) {
-    return msg.slice(1).split(' ');
+Game.split = function (source) {
+    return source.slice(1).split(' ');
 }
 
-Game.suffle = function (src, mt) {
+Game.suffle = function (source, mt) {
     var tmp = [];
-
-    while (src.length > 0)
-        tmp.push(src.splice(mt.nextInt(src.length), 1)[0]);
-    while (tmp.length > 0)
-        src.push(tmp.splice(mt.nextInt(tmp.length), 1)[0]);
+    
+    while (source.length > 0) { tmp.push(source.splice(mt.nextInt(source.length), 1)[0]); }
+    
+    while (tmp.length > 0) { source.push(tmp.splice(mt.nextInt(tmp.length), 1)[0]); }
 }
 
 Game.clear = function (game) {
-    var i;
-
-    game.state = State.Ready;
+    game.state = State.READY;
+    game.setup = Option.ALPHABET_SETUP;
     game.sound = '';
-    game.playerNumber = 4;
-    game.phase = '';
-    game.active = -1;
+    game.playerSize = 4;
+    game.phase = Phase.NONE;
+    game.active = Index.NONE;
+    game.priority = [];
+    game.canPlayCard = true;
+    
+    game.secondSettlement = Index.NONE;
+    
     game.trade = {
-        destroy: [0, 0, 0, 0, 0]
-        , create: [0, 0, 0, 0, 0]
-        , playerIdx: -1
+          output: [0, 0, 0, 0, 0]
+        , input: [0, 0, 0, 0, 0]
+        , playerIndex: Index.NONE
     };
-    game.largestArmy = -1;
-    game.longestRoad = -1;
-    game.robber = -1;
-    game.dice1 = 0;
-    game.dice2 = 0;
-    game.harbor = [];
-    game.tileList = [];
-    game.numList = [];
-    game.resource = [0, 0, 0, 0, 0];
-    game.card = [];
-    game.playerList = [
-        new Player(), new Player(), new Player(), new Player()
+    
+    game.largestArmy = Index.NONE;
+    game.longestRoad = Index.NONE;
+    game.robber = Index.NONE;
+    game.dice1 = Index.NONE;
+    game.dice2 = Index.NONE;
+    game.landList = [];
+    
+    var settlementList = game.settlementList = [];
+    
+    var i;
+    for (i = 0; i < 54; i++) { settlementList.push(SettlementRank.NONE | 0x00ff); }
+    
+    var roadList = game.roadList = [];
+    
+    for (i = 0; i < 72; i++) { roadList.push(Index.NONE); }
+    
+    game.numberList = [];
+    game.resourceStock = [0, 0, 0, 0, 0];
+    game.cardStock = [];
+    
+    var playerList = game.playerList = [
+          new Player()
+        , new Player()
+        , new Player()
+        , new Player()
     ];
-    for (i = game.playerList.length - 1; i >= 0; i--)
-        Player.clear(game.playerList[i]);
-    game.settlementList = [];
-    for (i = 0; i < 54; i++)
-        game.settlementList.push(SettlementRank.None | 0x00ff);
-    game.roadList = [];
-    for (i = 0; i < 72; i++)
-        game.roadList.push(-1);
+
+    var len1 = playerList.length;
+    for (i = 0; i < len1; i++) { Player.clear(playerList[i]); }
 }
 
 Game.start = function (game, mt) {
-    var i, j;
-
     mt.setSeed((new Date()).getTime());
-    game.state = State.Play;
-    game.phase = Phase.SetupSettlement1;
-    game.sound = '';
-    if (game.playerList[3].uid === '')
-        game.playerNumber = 3;
-    else
-        game.playerNumber = 4;
-    for (i = 0; i < 5; i++)
-        game.trade.destroy[i] = game.trade.create[i] = 0;
-    game.dice1 = 0;
-    game.dice2 = 0;
-    game.trade.target = -1;
-    game.largestArmy = -1;
-    game.longestRoad = -1;
-    for (i = game.settlementList.length - 1; i >= 0; i--)
-        game.settlementList[i] = (SettlementRank.None | 0x00ff);
-    for (i = game.roadList.length - 1; i >= 0; i--)
-        game.roadList[i] = -1;
-    game.active = 0;
-    for (i = 0; i < 6; i++)
-        game.harbor[i] = i;
-    this.suffle(game.harbor, mt);
-    game.tileList = [
-        Resource.Brick, Resource.Brick, Resource.Brick
-        , Resource.Wool, Resource.Wool, Resource.Wool, Resource.Wool
-        , Resource.Ore, Resource.Ore, Resource.Ore
-        , Resource.Grain, Resource.Grain, Resource.Grain, Resource.Grain
-        , Resource.Lumber, Resource.Lumber, Resource.Lumber, Resource.Lumber
-        , -1
-    ];
-    this.suffle(game.tileList, mt);
-    for (i = game.tileList.length - 1; i >= 0; i--) {
-        if (game.tileList[i] === -1) {
-            game.robber = parseInt(i);
-            break;
-        }
-    }
-    game.numList = this.createNumList(game.tileList, mt);
-    game.card.length = 0;
-    for (i = 0; i < 14; i++)
-        game.card.push(Card.Soldier);
-    for (i = 0; i < 5; i++)
-        game.card.push(Card.VictoryPoint);
-    for (i = 0; i < 2; i++)
-        game.card.push(Card.RoadBuilding);
-    for (i = 0; i < 2; i++)
-        game.card.push(Card.YearOfPlenty);
-    for (i = 0; i < 2; i++)
-        game.card.push(Card.Monopoly);
-    this.suffle(game.card, mt);
-    for (i = game.resource.length - 1; i >= 0; i--)
-        game.resource[i] = 19;
-    for (i = game.playerNumber - 1; i >= 0; i--)
-        Player.start(game.playerList[i]);
-    if (game.playerNumber === 3) Player.clear(game.playerList[3]);
-}
+    game.state = State.PLAYING;
+    game.phase = Phase.SETUP_SETTLEMENT1;
+    game.secondSettlement = Index.NONE;
+    game.dice1 = Index.NONE;
+    game.dice2 = Index.NONE;
+    game.trade.playerIndex = Index.NONE;
+    game.largestArmy = Index.NONE;
+    game.longestRoad = Index.NONE;
+    
+    var settlementList = game.settlementList;
 
-Game.createNumList = function (tileList, mt) {
-    var numList = [], tmp = [];
-
-    do {
-        numList = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12];
-        while (numList.length > 0)
-            tmp.push(numList.splice(mt.nextInt(numList.length), 1)[0]);
-        while (tmp.length > 0) {
-            if (tileList[numList.length] === -1) numList.push(-1);
-            numList.push(tmp.splice(mt.nextInt(tmp.length), 1)[0]);
-        }
-    } while (this.isWrongNumList(numList));
-
-    return numList;
-}
-
-Game.isWrongNumList = function (numList) {
     var i;
+    var len1 = settlementList.length;
+    for (i = 0; i < len1; i++) { settlementList[i] = SettlementRank.NONE | 0x00ff; }
+    
+    var roadList = game.roadList;
 
-    for (i = 0; i < numList.length; i++) {
-        if (numList[i] === 6 || numList[i] === 8) {
+    len1 = roadList.length;
+    for (i = 0; i < len1; i++) { roadList[i] = Index.NONE; }
+    
+    game.active = 0;
+    game.priority.length = 0;
+    game.priority.push(0);
+    game.canPlayCard = true;
+    
+    var landList = game.landList;
+    
+    landList.length = 0;
+    for (i = 0; i < 3; i++) { landList.push(Resource.BRICK); }
+    for (i = 0; i < 4; i++) { landList.push(Resource.WOOL); }
+    for (i = 0; i < 3; i++) { landList.push(Resource.ORE); }
+    for (i = 0; i < 4; i++) { landList.push(Resource.GRAIN); }
+    for (i = 0; i < 4; i++) { landList.push(Resource.LUMBER); }
+    landList.push(Land.DESERT);
+    
+    this.suffle(landList, mt);
+    
+    for (i = 0; game.landList[i] !== Land.DESERT; i++);
+    game.robber = i;
+    
+    if (game.setup === Option.ALPHABET_SETUP) {
+        this.setupAlphabet(game, mt);
+    } else {
+        this.setupRandom(game, mt);
+    }
+
+    var cardStock = game.cardStock;
+    cardStock.length = 0;
+
+    for (i = 0; i < 14; i++) { cardStock.push(Card.SOLDIER); }
+    for (i = 0; i < 5; i++) { cardStock.push(Card.VICTORY_POINT); }
+    for (i = 0; i < 2; i++) { cardStock.push(Card.ROAD_BUILDING); }
+    for (i = 0; i < 2; i++) { cardStock.push(Card.YEAR_OF_PLENTY); }
+    for (i = 0; i < 2; i++) { cardStock.push(Card.MONOPOLY); }
+    
+    this.suffle(cardStock, mt);
+    
+    var resourceStock = game.resourceStock;
+
+    len1 = resourceStock.length;
+    for (i = 0; i <  len1; i++) { resourceStock[i] = 19; }
+    
+    var playerList = game.playerList;
+
+    len1 = game.playerSize = game.playerList[3].uid === '' ? 3 : 4;
+    for (i = 0; i < len1; i++) { Player.start(playerList[i]); }
+    
+    if (len1 === 3) { Player.clear(playerList[3]); }
+}
+
+Game.isWrongNumberList = function (numberList) {
+    var i;
+    var len1 = numberList.length;
+    for (i = 0; i < len1; i++) {
+        if (numberList[i] === 6 || numberList[i] === 8) {
             switch (i) {
                 case 0: case 1:
                     if (
-                           (numList[i + 1] === 6 || numList[i + 1] === 8)
-                        || (numList[i + 3] === 6 || numList[i + 3] === 8)
-                        || (numList[i + 4] === 6 || numList[i + 4] === 8)
-                    ) return true;
+                           (numberList[i + 1] === 6 || numberList[i + 1] === 8)
+                        || (numberList[i + 3] === 6 || numberList[i + 3] === 8)
+                        || (numberList[i + 4] === 6 || numberList[i + 4] === 8)
+                    ) {
+                        return true;
+                    }
                     break;
                 case 2:
                     if (
-                           (numList[i + 3] === 6 || numList[i + 3] === 8)
-                        || (numList[i + 4] === 6 || numList[i + 4] === 8)
-                    ) return true;
+                           (numberList[i + 3] === 6 || numberList[i + 3] === 8)
+                        || (numberList[i + 4] === 6 || numberList[i + 4] === 8)
+                    ) {
+                        return true;
+                    }
                     break;
                 case 3: case 4: case 5: case 8: case 9: case 10:
                     if (
-                           (numList[i + 1] === 6 || numList[i + 1] === 8)
-                        || (numList[i + 4] === 6 || numList[i + 4] === 8)
-                        || (numList[i + 5] === 6 || numList[i + 5] === 8)
-                    ) return true;
+                           (numberList[i + 1] === 6 || numberList[i + 1] === 8)
+                        || (numberList[i + 4] === 6 || numberList[i + 4] === 8)
+                        || (numberList[i + 5] === 6 || numberList[i + 5] === 8)
+                    ) {
+                        return true;
+                    }
                     break;
                 case 6:
                     if (
-                           (numList[i + 4] === 6 || numList[i + 4] === 8)
-                        || (numList[i + 5] === 6 || numList[i + 5] === 8)
-                    ) return true;
+                           (numberList[i + 4] === 6 || numberList[i + 4] === 8)
+                        || (numberList[i + 5] === 6 || numberList[i + 5] === 8)
+                    ) {
+                        return true;
+                    }
                     break;
                 case 7:
                     if (
-                           (numList[i + 1] === 6 || numList[i + 1] === 8)
-                        || (numList[i + 5] === 6 || numList[i + 5] === 8)
-                    ) return true;
+                           (numberList[i + 1] === 6 || numberList[i + 1] === 8)
+                        || (numberList[i + 5] === 6 || numberList[i + 5] === 8)
+                    ) {
+                        return true;
+                    }
                     break;
                 case 11:
-                    if (numList[i + 4] === 6 || numList[i + 4] === 8) return true;
+                    if (numberList[i + 4] === 6 || numberList[i + 4] === 8) { return true; }
                     break;
                 case 12:
                     if (
-                           (numList[i + 1] === 6 || numList[i + 1] === 8)
-                        || (numList[i + 4] === 6 || numList[i + 4] === 8)
-                    ) return true;
+                           (numberList[i + 1] === 6 || numberList[i + 1] === 8)
+                        || (numberList[i + 4] === 6 || numberList[i + 4] === 8)
+                    ) {
+                        return true;
+                    }
                     break;
                 case 13: case 14:
                     if (
-                           (numList[i + 1] === 6 || numList[i + 1] === 8)
-                        || (numList[i + 3] === 6 || numList[i + 3] === 8)
-                        || (numList[i + 4] === 6 || numList[i + 4] === 8)
-                    ) return true;
+                           (numberList[i + 1] === 6 || numberList[i + 1] === 8)
+                        || (numberList[i + 3] === 6 || numberList[i + 3] === 8)
+                        || (numberList[i + 4] === 6 || numberList[i + 4] === 8)
+                    ) {
+                        return true;
+                    }
                     break;
                 case 15:
-                    if (numList[i + 3] === 6 || numList[i + 3] === 8) return true;
+                    if (numberList[i + 3] === 6 || numberList[i + 3] === 8) { return true; }
                     break;
                 case 16: case 17:
-                    if (numList[i + 1] === 6 || numList[i + 1] === 8) return true;
+                    if (numberList[i + 1] === 6 || numberList[i + 1] === 8) { return true; }
                     break;
             }
         }
     }
-
-    return false;
-}
-
-Game.buildSettlement = function (game, pt) {
-    game.settlementList[pt] = (SettlementRank.Settlement | game.active);
-    game.playerList[game.active].settlement--;
-    game.playerList[game.active].score++;
-
-    if ((pt === 0 || pt === 3) && Sea[game.harbor[0]][0] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[0]][0]] = true;
-    else if ((pt === 1 || pt === 4) && Sea[game.harbor[0]][1] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[0]][1]] = true;
-    else if ((pt === 1 || pt === 5) && Sea[game.harbor[0]][2] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[0]][2]] = true;
-    else if ((pt === 2 || pt === 6) && Sea[game.harbor[1]][0] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[1]][0]] = true;
-    else if ((pt === 10 || pt === 15) && Sea[game.harbor[1]][1] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[1]][1]] = true;
-    else if ((pt === 15 || pt === 20) && Sea[game.harbor[1]][2] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[1]][2]] = true;
-    else if ((pt === 26 || pt === 32) && Sea[game.harbor[2]][0] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[2]][0]] = true;
-    else if ((pt === 37 || pt === 42) && Sea[game.harbor[2]][1] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[2]][1]] = true;
-    else if ((pt === 42 || pt === 46) && Sea[game.harbor[2]][2] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[2]][2]] = true;
-    else if ((pt === 50 || pt === 53) && Sea[game.harbor[3]][0] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[3]][0]] = true;
-    else if ((pt === 49 || pt === 52) && Sea[game.harbor[3]][1] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[3]][1]] = true;
-    else if ((pt === 48 || pt === 52) && Sea[game.harbor[3]][2] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[3]][2]] = true;
-    else if ((pt === 47 || pt === 51) && Sea[game.harbor[4]][0] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[4]][0]] = true;
-    else if ((pt === 38 || pt === 43) && Sea[game.harbor[4]][1] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[4]][1]] = true;
-    else if ((pt === 33 || pt === 38) && Sea[game.harbor[4]][2] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[4]][2]] = true;
-    else if ((pt === 21 || pt === 27) && Sea[game.harbor[5]][0] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[5]][0]] = true;
-    else if ((pt === 11 || pt === 16) && Sea[game.harbor[5]][1] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[5]][1]] = true;
-    else if ((pt === 7 || pt === 11) && Sea[game.harbor[5]][2] !== Harbor.None)
-        game.playerList[game.active].harbor[Sea[game.harbor[5]][2]] = true;
-
-    return this.longestRoad(game);
-}
-
-Game.longestRoad = function (game) {
-    var i, j, tmp, size = [0, 0, 0, 0], result = -1;
-
-    for (i = size.length - 1; i >= 0; i--) {
-        for (j = game.roadList.length - 1; j >= 0; j--) {
-            tmp = this.roadSize(game, i, j, 0, 0);
-            if (tmp > size[i]) size[i] = tmp;
-        }
-    }
-    tmp = 0;
-    for (i = size.length - 1; i >= 1; i--)
-        if (size[i] > size[tmp]) tmp = i;
-    if (size[tmp] < 5) {
-        if (game.longestRoad !== -1) {
-            game.playerList[game.longestRoad].bonus -= 2;
-            game.longestRoad = -1;
-        }
-    } else {
-        if (game.longestRoad === -1) {
-            result = game.longestRoad = tmp;
-            game.playerList[tmp].bonus += 2;
-        } else if (tmp !== game.longestRoad && size[tmp] > size[game.longestRoad]) {
-            game.playerList[game.longestRoad].bonus -= 2;
-            result = game.longestRoad = tmp;
-            game.playerList[tmp].bonus += 2;
-        }
-    }
-
-    return result;
-}
-
-Game.buildCity = function (game, pt) {
-    game.settlementList[pt] = (SettlementRank.City | game.active);
-    game.playerList[game.active].city--;
-    game.playerList[game.active].settlement++;
-    game.playerList[game.active].score++;
-}
-
-Game.buildRoad = function (game, pt) {
-    game.roadList[pt] = game.active;
-    game.playerList[game.active].road--;
-
-    return this.longestRoad(game);
-}
-
-Game.createResource = function (game, playerIdx, type, size) {
-    game.playerList[playerIdx].resource[type] += size;
-    game.resource[type] -= size;
-}
-
-Game.destroyResource = function (game, playerIdx, type, size) {
-    game.playerList[playerIdx].resource[type] -= size;
-    game.resource[type] += size; 
-}
-
-Game.huntResource = function (game, fromIdx, toIdx, type, size) {
-    game.playerList[fromIdx].resource[type] -= size;
-    game.playerList[toIdx].resource[type] += size;
-}
-
-Game.robberResource = function (game, playerIdx, mt) {
-    var i, j, tmp = [];
-
-    for (i = 0; i < 5; i++) {
-        for (j = game.playerList[playerIdx].resource[i]; j > 0; j--)
-            tmp.push(i);
-    }
-    this.suffle(tmp, mt);
-    this.huntResource(game, playerIdx, game.active, tmp[mt.nextInt(tmp.length)], 1);
-}
-
-Game.canBuildRoad = function (game, pt) {
-    var i, j;
-
-    if (game.roadList[pt] === -1) {
-        for (i = RoadLink[pt].length - 1; i >= 0; i--) {
-            if ((game.settlementList[RoadLink[pt][i]] & 0x00ff) === game.active) {
-                return true;
-            } else if ((game.settlementList[RoadLink[pt][i]] & 0xff00) === SettlementRank.None) {
-                for (j = SettlementLink[RoadLink[pt][i]].length - 1; j >= 0; j--) {
-                    if (game.roadList[SettlementLink[RoadLink[pt][i]][j]] === game.active) return true;
-                }
-            }
-        }
-    }
-
-    return false;
-}
-
-Game.canBuildRoads = function (game) {
-    var i, result = false;
-
-    for (i = game.roadList.length - 1; i >= 0; i--)
-        if(this.canBuildRoad(game, i)) return true;
-
-    return false;
-}
-
-Game.canBuildSettlement = function (game, playerIdx) {
-    var i, j, result = false;
-
-    for (i = SettlementLink[playerIdx].length - 1; i >= 0; i--) {
-        if (game.roadList[SettlementLink[playerIdx][i]].length === game.active) {
-            result = true;
-            for (j = RoadLink[SettlementLink[playerIdx][i]].length - 1; j >= 0; j--) {
-                if ((game.settlementList[RoadLink[SettlementLink[playerIdx][i]][j]] & 0xff00) !== SettlementRank.None) {
-                    result = false;
-                    break;
-                }
-            }
-        }
-    }
-
-    return result;
-}
-
-Game.canBuildSettlements = function (game) {
-    var i;
-
-    for (i = game.settlementList.length - 1; i >= 0; i--)
-        if(this.canBuildSettlement(game, i)) return true;
     
     return false;
 }
 
-Game.canBuildCity = function (game, playerIdx) {
-    if(game.settlementList[playerIdx] === (SettlementRank.Settlement | game.active)) return true;
+Game.setupRandom = function(game, mt) {
+    var tmp = [];
+    do {
+        var numberList = game.numberList = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12];
 
-    return false;
+        while (numberList.length > 0) {
+            tmp.push(numberList.splice(mt.nextInt(numberList.length), 1)[0]);
+        }
+
+        while (tmp.length > 0) {
+            if (game.landList[numberList.length] === Land.DESERT) { numberList.push(Land.DESERT); }
+            numberList.push(tmp.splice(mt.nextInt(tmp.length), 1)[0]);
+        }
+    } while (this.isWrongNumberList(numberList));
 }
 
-Game.canBuildCitys = function (game) {
-    var i;
+Game.setupAlphabet = function(game, mt) {
+    var index = mt.nextInt(ALPHABET_SIGNPOST.length);
 
-    for (i = game.settlementList.length - 1; i >= 0; i--)
-        if (this.canBuildCity(game, i)) return true;
+    var j = 0;
+
+    var i;
+    var len1 = ALPHABET_CHIP.length;
+    for (i = 0; j < len1; i++) {
+        if (game.landList[ALPHABET_SIGNPOST[index][i]] === Land.DESERT) {
+            game.numberList[ALPHABET_SIGNPOST[index][i]] = Land.DESERT;
+        } else {
+            game.numberList[ALPHABET_SIGNPOST[index][i]] = ALPHABET_CHIP[j];
+
+            j++;
+        }
+    }
+}
+
+Game.hasPriorityUid = function (game, uid) {
+    var playerList = game.playerList;
+    var priority = game.priority;
+
+    var i;
+    var len1 = priority.length;
+    for (i = 0; i < len1; i++) {
+        if (playerList[priority[i]].uid === uid) { return true; }
+    }
     
     return false;
 }
 
-Game.roadSize = function (game, playerIdx, pt, max, depth) {
-    var i, j, foo, bar;
+Game.gainResource = function (game, color, type, size) {
+    game.resourceStock[type] -= size;
+    game.playerList[color].resource[type] += size;
+}
 
-    if (game.roadList[pt] !== playerIdx) {
+Game.loseResource = function (game, color, type, size) {
+    game.resourceStock[type] += size;
+    game.playerList[color].resource[type] -= size;
+}
+
+Game.roadSize = function (game, color, index, max, depth) {
+    if (game.roadList[index] !== color) {
         return depth;
     } else {
-        game.roadList[pt] = -1;
-        for (i = RoadLink[pt].length - 1; i >= 0; i--) {
+        var roadList = game.roadList;
+        roadList[index] = Index.NONE;
+
+        var settlementList = game.settlementList;
+        
+        var i;
+        var len1 = ROAD_LINK[index].length;
+        for (i = 0; i < len1; i++) {
             if (
-                   (game.settlementList[RoadLink[pt][i]] & 0xff00) === SettlementRank.None
-                || (game.settlementList[RoadLink[pt][i]] & 0x00ff) === playerIdx
+                   (settlementList[ROAD_LINK[index][i]] & 0xff00) === SettlementRank.NONE
+                || (settlementList[ROAD_LINK[index][i]] & 0x00ff) === color
             ) {
-                foo = game.settlementList[RoadLink[pt][i]];
-                game.settlementList[RoadLink[pt][i]] = (SettlementRank.Settlement | 0x00ff);
-                for (j = SettlementLink[RoadLink[pt][i]].length - 1; j >= 0; j--) {
-                    bar = this.roadSize(game, playerIdx, SettlementLink[RoadLink[pt][i]][j], max, depth + 1);
-                    if (bar > max) max = bar;
+                var before = settlementList[ROAD_LINK[index][i]];
+                
+                settlementList[ROAD_LINK[index][i]] = (SettlementRank.SETTLEMENT | 0x00ff);
+
+                var j;
+                var len2 = SETTLEMENT_LINK[ROAD_LINK[index][i]].length;
+                for (j = 0; j < len2; j++) {
+                    var size = this.roadSize(game, color, SETTLEMENT_LINK[ROAD_LINK[index][i]][j], max, depth + 1);
+                    if (size > max) { max = size; }
                 }
-                game.settlementList[RoadLink[pt][i]] = foo;
+                
+                settlementList[ROAD_LINK[index][i]] = before;
             }
         }
-        game.roadList[pt] = playerIdx;
+        
+        roadList[index] = color;
     }
-
+    
     return max;
 }
 
-Game.sumPlayerResource = function (game, playerIdx) {
-    var i, sum = 0;
+Game.longestRoad = function (game) {
+    var sizeList = [0, 0, 0, 0];
+    
+    var i;
+    var len1 = sizeList.length;
+    for (i = 0; i < len1; i++) {
+        var j;
+        var len2 = game.roadList.length;
+        for (j = 0; j < len2; j++) {
+            var size = this.roadSize(game, i, j, 0, 0);
+            if (size > sizeList[i]) { sizeList[i] = size; }
+        }
+    }
+    
+    var max = 0;
 
-    for (i = game.playerList[playerIdx].resource.length - 1; i >= 0; i--)
-        sum += game.playerList[playerIdx].resource[i];
-
-    return sum;
+    len1 = sizeList.length;
+    for (i = 0; i < len1; i++) {
+        if (sizeList[i] > sizeList[max]) { max = i; }
+    }
+    
+    var longestRoad = game.longestRoad;
+    var playerList = game.playerList;
+    
+    if (sizeList[max] < 5) {
+        max = Index.NONE;
+        
+        if (longestRoad !== Index.NONE) {
+            playerList[longestRoad].bonusScore -= 2;
+            game.longestRoad = Index.NONE;
+        }
+    } else {
+        if (longestRoad === Index.NONE) {
+            game.longestRoad = max;
+            playerList[max].bonusScore += 2;
+        } else if (max !== longestRoad && sizeList[max] > sizeList[longestRoad]) {
+            playerList[longestRoad].bonusScore -= 2;
+            game.longestRoad = max;
+            playerList[max].bonusScore += 2;
+        } else {
+            max = Index.NONE;
+        }
+    }
+    
+    return max;
 }
 
-Game.playCard = function (game, type) {
-    game.playerList[game.active].wakeCard[type]--;
-    game.playerList[game.active].deadCard[type]++;
-    game.playerList[game.active].isPlayedCard = true;
+Game.largestArmy = function (game) {
+    var result = Index.NONE;
+
+    var active = game.active;
+    var activePlayer = game.playerList[active];
+    var largestArmy = game.largestArmy;
+    var size = activePlayer.deadCard[Card.SOLDIER];
+
+    if (largestArmy === Index.NONE) {
+        if (size >= 3) {
+            result = game.largestArmy = active;
+            activePlayer.bonusScore += 2;
+        }
+    } else if (largestArmy !== active) {
+        var largestArmyPlayer = game.playerList[largestArmy];
+
+        if (size > largestArmyPlayer.deadCard[Card.SOLDIER]) {
+            largestArmyPlayer.bonusScore -= 2;
+            result = game.largestArmy = active;
+            activePlayer.bonusScore += 2;
+        }
+    }
+
+    return result;
 }
 
-
-Game.sumResource = function (game) {
-    var i, sum = 0;
-
-    for (i = game.resource.length - 1; i >= 0; i--) sum += game.resource[i];
-
-    return sum;
+Game.buildSettlement = function (game, index) {
+    var active = game.active;
+    var playerList = game.playerList;
+        
+    game.settlementList[index] = SettlementRank.SETTLEMENT | active;
+    playerList[active].settlementStock--;
+    playerList[active].baseScore++;
+    
+    switch (index) {
+        case 5: case 6: case 16: case 27: case 36: case 46: case 52: case 53:
+            playerList[active].harbor[Harbor.GENERIC] = true;
+            break;
+        case 2: case 3:
+            playerList[active].harbor[Harbor.ORE] = true;
+            break;
+        case 7: case 8:
+            playerList[active].harbor[Harbor.GRAIN] = true;
+            break;
+        case 15: case 25:
+            playerList[active].harbor[Harbor.WOOL] = true;
+            break;
+        case 38: case 39:
+            playerList[active].harbor[Harbor.LUMBER] = true;
+            break;
+        case 49: case 50:
+            playerList[active].harbor[Harbor.BRICK] = true;
+            break;
+    }
 }
 
-Game.diceRoll = function (mt) {
-    var foo = [1, 2, 3, 4, 5, 6, 6, 5, 4, 3, 2, 1], bar = [];
+Game.buildRoad = function (game, index) {
+    var active = game.active;
+    
+    game.roadList[index] = active;
+    game.playerList[active].roadStock--;
+}
 
-    while (foo.length > 0)
-        bar.push(foo.splice(mt.nextInt(foo.length), 1)[0]);
+Game.buildCity = function (game, index) {
+    var active = game.active;
+    var playerList = game.playerList;
+    
+    game.settlementList[index] = SettlementRank.CITY | active;
+    playerList[active].cityStock--;
+    playerList[active].baseScore++;
+}
 
-    return bar[mt.nextInt(bar.length)];
+Game.canBuildRoad = function (game, index) {
+    var roadList = game.roadList;
+    
+    if (roadList[index] === Index.NONE) {
+        var active = game.active;
+        var settlementList = game.settlementList;
+
+        var i;
+        var len1 = ROAD_LINK[index].length;
+        for (i = 0; i < len1; i++) {
+            if ((settlementList[ROAD_LINK[index][i]] & 0x00ff) === active) {
+                return true;
+            } else if ((settlementList[ROAD_LINK[index][i]] & 0xff00) === SettlementRank.NONE) {
+                var j;
+                var len2 = SETTLEMENT_LINK[ROAD_LINK[index][i]].length;
+                for (j = 0; j < len2; j++) {
+                    if (roadList[SETTLEMENT_LINK[ROAD_LINK[index][i]][j]] === active) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    
+    return false;
+}
+
+Game.hasCanBuildRoad = function (game) {
+    var i;
+    var len1 = game.roadList.length;
+    for (i = 0; i < len1; i++) {
+        if(this.canBuildRoad(game, i)) { return true; }
+    }
+    
+    return false;
 }
 
 module.exports = Game;

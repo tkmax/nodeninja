@@ -1,788 +1,1297 @@
-var Room = require('../Room')
-    , Const = require('./Const')
-    , Player = require('./Player')
-    , Game = require('./Game')
-    , MersenneTwister = require('../MersenneTwister')
-    , State = Const.State
-    , Phase = Const.Phase
-    , Resource = Const.Resource
-    , Card = Const.Card
-    , SettlementRank = Const.SettlementRank
-    , SettlementLink = Const.SettlementLink
-    , TileLink = Const.TileLink
-    , RoadLink = Const.RoadLink
-    , Harbor = Const.Harbor
-    , Sea = Const.Sea
-    , ColorName = Const.ColorName
-    , ResourceName = Const.ResourceName;
+var Room = require('../Room');
+var MersenneTwister = require('../MersenneTwister');
+var Game = require('./Game');
+var Dice = require('./Dice');
+var Const = require('./Const');
+var Option = Const.Option;
+var State = Const.State;
+var Phase = Const.Phase;
+var Sound = Const.Sound;
+var Index = Const.Index;
+var Resource = Const.Resource;
+var Land = Const.Land;
+var SettlementRank = Const.SettlementRank;
+var Card = Const.Card;
+var FONT_COLOR = Const.FONT_COLOR;
+var COLOR_NAME = Const.COLOR_NAME;
+var LAND_LINK = Const.LAND_LINK;
+var RESOURCE_NAME = Const.RESOURCE_NAME;
 
 var Cataso = function () {
     this.initialize('c');
+    
     this.game = new Game();
+    this.dice = new Dice();
     this.mt = new MersenneTwister();
+    
     Game.clear(this.game);
-};
+}
 
 Cataso.prototype = new Room();
 
-Cataso.prototype.onMessage = function (uid, msg) {
-    var opt, i, j, foo, bar, hoge;
+Cataso.prototype.split = function (source) {
+    return source.slice(1).split(' ');
+}
 
-    if (msg[0] === 'a') {
+Cataso.prototype.reset = function () {
+    this.isPlaying = false;
+
+    Game.clear(this.game);
+
+    this.broadcast(JSON.stringify(this.game));
+}
+
+Cataso.prototype.onCommand = function (user, message) {
+    this.basicCommand(user, message);
+
+    switch (message[0]) {
+        case '/alphabet':
+            if (this.isPlaying) {
+                this.chat('?', 'deeppink', 'プレイ中には変更できません。');
+            } else {
+                this.game.setup = Option.ALPHABET_SETUP;
+
+                this.chat('?', 'deeppink', 'アルファベット配置に変更しました。');
+
+                this.broadcast(JSON.stringify(this.game));
+            }
+            break;
+        case '/random':
+            if (this.isPlaying) {
+                this.chat('?', 'deeppink', 'プレイ中には変更できません。');
+            } else {
+                this.game.setup = Option.RANDOM_SETUP;
+
+                this.chat('?', 'deeppink', 'ランダム配置に変更しました。');
+
+                this.broadcast(JSON.stringify(this.game));
+            }
+            break;
+    }
+}
+
+Cataso.prototype.onChat = function (user, message) {
+    var playerList = this.game.playerList;
+    var color = 'white';
+    
+    var i;
+    var len1 = playerList.length;
+    for (i = 0; i < len1; i++) {
+        if (playerList[i].uid === user.uid) {
+            color = FONT_COLOR[i];
+            break;
+        }
+    }
+    
+    this.chat(user.uid, color, (message.split('<').join('&lt;')).split('>').join('&gt;'));
+}
+
+Cataso.prototype.onMessage = function (uid, message) {
+    if (message[0] === 'a') {
         this.unicast(uid, JSON.stringify(this.game));
     } else {
-        if (this.game.state === State.Ready) {
-            switch (msg[0]) {
+        if (this.game.state === State.READY) {
+            switch (message[0]) {
                 case 'b':
-                    for (i = 0; i < this.game.playerList.length; i++) {
-                        if (this.game.playerList[i].uid === '') {
-                            this.game.playerList[i].uid = uid;
-                            this.game.sound = 'join';
-                            break;
-                        }
-                    }
-                    break;
-                case 'c':
-                    for (i = 0; i < this.game.playerList.length; i++) {
-                        if (this.game.playerList[i].uid === uid) this.game.playerList[i].uid = '';
-                    }
-                    break;
-                case 'd':
-                    if (
-                           this.game.playerList[0].uid !== ''
-                        && this.game.playerList[1].uid !== ''
-                        && this.game.playerList[2].uid !== ''
-                    ) {
-                        this.isPlaying = true;
-                        Game.start(this.game, this.mt);
-                        this.game.sound = 'opening';
-                    }
-                    break;
-            }
-        } else {
-            switch (msg[0]) {
-                case 'e':
-                    if (
-                           this.game.playerList[this.game.active].uid === uid
-                        && (
-                               this.game.phase === Phase.BuildRoad
-                            || this.game.phase === Phase.BuildSettlement
-                            || this.game.phase === Phase.BuildCity
-                            || this.game.phase === Phase.InternationalTrade
-                            || this.game.phase === Phase.DomesticTrade1
-                        )
-                    ) this.game.phase = Phase.Main;
-                    break;
-                case 'f':
-                    if (
-                           this.game.phase === Phase.SetupSettlement1
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        opt = Game.option(msg);
-                        Game.buildSettlement(this.game, parseInt(opt[0]));
-                        this.game.phase = Phase.SetupRoad1;
-                        this.game.sound = 'build';
-                    }
-                    break;
-                case 'g':
-                    if (
-                           this.game.phase === Phase.SetupRoad1
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        opt = Game.option(msg);
-                        Game.buildRoad(this.game, opt[0]);
-                        if (this.game.active < this.game.playerNumber - 1) {
-                            this.game.phase = Phase.SetupSettlement1;
-                            this.game.active++;
-                        } else {
-                            this.game.phase = Phase.SetupSettlement2;
-                        }
-                        this.game.sound = 'end';
-                    }
-                    break;
-                case 'h':
-                    if (
-                           this.game.phase === Phase.SetupSettlement2
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        opt = Game.option(msg);
-                        foo = parseInt(opt[0]);
-                        Game.buildSettlement(this.game, foo);
-                        this.game.playerList[this.game.active].secondSettlement = foo;
-                        for (i = TileLink.length - 1; i >= 0; i--) {
-                            for (j = TileLink[i].length - 1; j >= 0; j--) {
-                                if (TileLink[i][j] === foo) Game.createResource(this.game, this.game.active, this.game.tileList[i], 1);
-                            }
-                        }
-                        this.game.phase = Phase.SetupRoad2;
-                        this.game.sound = 'build';
-                    }
-                    break;
-                case 'i':
-                    if (
-                           this.game.phase === Phase.SetupRoad2
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        opt = Game.option(msg);
-                        Game.buildRoad(this.game, opt[0]);
-                        if (this.game.active > 0) {
-                            this.game.phase = Phase.SetupSettlement2;
-                            this.game.active--;
-                        } else {
-                            this.game.phase = Phase.DiceRoll;
-                        }
-                        this.game.sound = 'end';
-                    }
-                    break;
-                case 'j':
-                    if (
-                           this.game.phase === Phase.DiceRoll
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        this.game.dice1 = Game.diceRoll(this.mt);
-                        this.game.dice2 = Game.diceRoll(this.mt);
-                        foo = this.game.dice1 + this.game.dice2;
-                        this.chat('?', 'deeppink', 'ダイスロール->' + foo);
-                        if (foo === 7) {
-                            for (i = 0; i < this.game.playerList.length; i++) {
-                                if (Game.sumPlayerResource(this.game, i) >= 8) {
-                                    this.chat(
-                                        '?', 'deeppink', 'バースト発生->'
-                                        + this.game.playerList[i].uid + '(' + ColorName[i] + ')'
-                                    );
-                                    this.game.playerList[i].burst = Math.floor(Game.sumPlayerResource(this.game, i) / 2);
-                                    this.game.phase = Phase.Burst;
-                                }
-                            }
-                            this.chat('?', 'deeppink', '**盗賊が発生しました**');
-                            if (this.game.phase !== Phase.Burst) this.game.phase = Phase.Robber1;
-                            this.game.sound = 'robber';
-                        } else {
-                            hoge = [0, 0, 0, 0, 0];
-                            for (i = this.game.numList.length - 1; i >= 0; i--) {
-                                if (
-                                       i !== this.game.robber
-                                    && this.game.numList[i] === foo
-                                ) {
-                                    for (j = TileLink[i].length - 1; j >= 0; j--) {
-                                        switch (this.game.settlementList[TileLink[i][j]] & 0xff00) {
-                                            case SettlementRank.Settlement:
-                                                hoge[this.game.tileList[i]]++;
-                                                break;
-                                            case SettlementRank.City:
-                                                hoge[this.game.tileList[i]] += 2;
-                                                break;
-                                        }
-                                    }
-                                }
-                            }
-                            for (i = hoge.length - 1; i >= 0; i--) {
-                                if (this.game.resource[i] < hoge[i]) {
-                                    hoge[i] = -1;
-                                    this.chat('?', 'deeppink', '**資源不足で' + ResourceName[i] + 'の生産失敗**');
-                                }
-                            }
-                            for (i = this.game.numList.length - 1; i >= 0; i--) {
-                                if (
-                                       i !== this.game.robber
-                                    && hoge[this.game.tileList[i]] !== -1
-                                    && this.game.numList[i] === foo
-                                ) {
-                                    for (j = TileLink[i].length - 1; j >= 0; j--) {
-                                        switch (this.game.settlementList[TileLink[i][j]] & 0xff00) {
-                                            case SettlementRank.Settlement:
-                                                Game.createResource(this.game, this.game.settlementList[TileLink[i][j]] & 0x00ff, this.game.tileList[i], 1);
-                                                break;
-                                            case SettlementRank.City:
-                                                Game.createResource(this.game, this.game.settlementList[TileLink[i][j]] & 0x00ff, this.game.tileList[i], 2);
-                                                break;
-                                        }
-                                    }
-                                }
-                            }
-                            this.game.phase = Phase.Main;
-                            this.game.sound = 'dice';
-                        }
-                    }
-                    break;
-                case 'k':
-                    opt = Game.option(msg);
-                    if (
-                           this.game.phase === Phase.Burst
-                        && this.game.playerList[opt[0]].uid === uid
-                    ) {
-                        this.chat(
-                            '?', 'deeppink',
-                            ResourceName[opt[1]] + 'を1枚を破棄->'
-                            + this.game.playerList[opt[0]].uid
-                            + '(' + ColorName[opt[0]] + ')'
-                        );
-                        this.game.playerList[opt[0]].burst--;
-                        Game.destroyResource(this.game, opt[0], opt[1], 1);
-                        foo = true;
-                        for (i = this.game.playerList.length - 1; i >= 0; i--) {
-                            if (this.game.playerList[i].burst > 0) {
-                                foo = false;
+                    (function (that) {
+                        var game = that.game;
+                        var playerList = game.playerList;
+
+                        var i;
+                        var len1 = playerList.length;
+                        for (i = 0; i < len1; i++) {
+                            var player = playerList[i];
+                            
+                            if (player.uid === '') {
+                                player.uid = uid;
+                                game.sound = Sound.JOIN;
                                 break;
                             }
                         }
-                        if (foo) this.game.phase = Phase.Robber1;
-                    }
+                    })(this);
                     break;
-                case 'l':
-                    if (
-                           this.game.phase === Phase.Robber1
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        opt = Game.option(msg);
-                        this.game.robber = parseInt(opt[0]);
-                        foo = false;
-                        for (i = TileLink[this.game.robber].length - 1; i >= 0; i--) {
-                            if (
-                                   (this.game.settlementList[TileLink[this.game.robber][i]] & 0xff00) !== SettlementRank.None
-                                && (this.game.settlementList[TileLink[this.game.robber][i]] & 0x00ff) !== this.game.active
-                                && Game.sumPlayerResource(this.game, this.game.settlementList[TileLink[this.game.robber][i]] & 0x00ff) > 0
-                            ) foo = true;
+                case 'c':
+                    (function (that) {
+                        var playerList = that.game.playerList;
+
+                        var i;
+                        var len1 = playerList.length;
+                        for (i = 0; i < len1; i++) {
+                            var player = playerList[i];
+                            
+                            if (player.uid === uid) { player.uid = ''; }
                         }
-                        if (foo)
-                            this.game.phase = Phase.Robber2;
-                        else
-                            this.game.phase = Phase.Main;
-                    }
+                    })(this);
                     break;
-                case 'm':
-                    if (
-                           this.game.phase === Phase.Robber2
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        opt = Game.option(msg);
-                        Game.robberResource(this.game, opt[0], this.mt);
-                        this.chat(
-                            '?', 'deeppink', '資源を１枚略奪->'
-                            + this.game.playerList[opt[0]].uid
-                            + '(' + ColorName[opt[0]] + ')'
-                        );
-                        this.game.phase = Phase.Main;
-                    }
-                    break;
-                case 'n':
-                    if (
-                           this.game.phase === Phase.Main
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) this.game.phase = Phase.BuildRoad;
-                    break;
-                case 'o':
-                    opt = Game.option(msg);
-                    if (
-                           this.game.phase === Phase.BuildRoad
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        Game.destroyResource(this.game, this.game.active, Resource.Brick, 1);
-                        Game.destroyResource(this.game, this.game.active, Resource.Lumber, 1);
-                        i = Game.buildRoad(this.game, opt[0]);
-                        if (i !== -1) {
-                            this.chat(
-                                '?', 'deeppink',
-                                '**' + this.game.playerList[i].uid
-                                + '(' + ColorName[i] + ')' + 'が道賞を獲得しました**'
-                            );
-                            this.game.sound = 'get';
-                        } else {
-                            this.game.sound = 'build';
-                        }
-                        this.game.phase = Phase.Main;
-                    }
-                    break;
-                case 'p':
-                    if (
-                           this.game.phase === Phase.Main
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) this.game.phase = Phase.BuildSettlement;
-                    break;
-                case 'q':
-                    opt = Game.option(msg);
-                    if (
-                           this.game.phase === Phase.BuildSettlement
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        Game.destroyResource(this.game, this.game.active, Resource.Brick, 1);
-                        Game.destroyResource(this.game, this.game.active, Resource.Wool, 1);
-                        Game.destroyResource(this.game, this.game.active, Resource.Grain, 1);
-                        Game.destroyResource(this.game, this.game.active, Resource.Lumber, 1);
-                        i = Game.buildSettlement(this.game, parseInt(opt[0]));
-                        if (i !== -1) {
-                            this.chat(
-                                '?', 'deeppink',
-                                '**' + this.game.playerList[i].uid
-                                + '(' + ColorName[i] + ')' + 'が道賞を獲得しました**'
-                            );
-                            this.game.sound = 'get';
-                        } else {
-                            this.game.sound = 'build';
-                        }
-                        this.game.phase = Phase.Main;
-                    }
-                    break;
-                case 'r':
-                    if (
-                           this.game.phase === Phase.Main
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) this.game.phase = Phase.BuildCity;
-                    break;
-                case 's':
-                    opt = Game.option(msg);
-                    if (
-                           this.game.phase === Phase.BuildCity
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        Game.destroyResource(this.game, this.game.active, Resource.Ore, 3);
-                        Game.destroyResource(this.game, this.game.active, Resource.Grain, 2);
-                        Game.buildCity(this.game, opt[0]);
-                        this.game.phase = Phase.Main;
-                        this.game.sound = 'build';
-                    }
-                    break;
-                case 't':
-                    if (
-                           this.game.phase === Phase.Main
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        foo = this.game.card.shift();
-                        if (foo === Card.VictoryPoint) this.game.playerList[this.game.active].bonus++;
-                        this.game.playerList[this.game.active].sleepCard[foo]++;
-                        Game.destroyResource(this.game, this.game.active, Resource.Wool, 1);
-                        Game.destroyResource(this.game, this.game.active, Resource.Ore, 1);
-                        Game.destroyResource(this.game, this.game.active, Resource.Grain, 1);
-                        this.chat('?', 'deeppink', 'カードを1枚引きました。');
-                    }
-                    break;
-                case 'u':
-                    if (
-                           this.game.phase === Phase.Main
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) this.game.phase = Phase.InternationalTrade;
-                    break;
-                case 'v':
-                    if (
-                           this.game.phase === Phase.InternationalTrade
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        opt = Game.option(msg);
-                        foo = '海外貿易(出)->';
-                        for (i = 0; i < 5; i++) {
-                            if (opt[i] !== '0') {
-                                foo += ' ' + ResourceName[i] + ':' + opt[i];
-                                Game.destroyResource(this.game, this.game.active, i, parseInt(opt[i]));
-                            }
-                        }
-                        this.chat('?', 'deeppink', foo);
-                        foo = '海外貿易(入)->';
-                        for (i = 5; i < 10; i++) {
-                            if (opt[i] !== '0') {
-                                foo += ' ' + ResourceName[i - 5] + ':' + opt[i];
-                                Game.createResource(this.game, this.game.active, i - 5, parseInt(opt[i]));
-                            }
-                        }
-                        this.chat('?', 'deeppink', foo);
-                        this.game.phase = Phase.Main;
-                    }
-                    break;
-                case 'w':
-                    if (
-                           this.game.phase === Phase.Main
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) this.game.phase = Phase.DomesticTrade1;
-                    break;
-                case 'x':
-                    if (
-                           this.game.phase === Phase.DomesticTrade1
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        opt = Game.option(msg);
-                        this.game.trade.playerIdx = parseInt(opt[0]);
-                        this.chat(
-                            '?', 'deeppink',
-                            '国内貿易を申し込みました->'
-                            + this.game.playerList[this.game.trade.playerIdx].uid
-                            + '(' + ColorName[this.game.trade.playerIdx] + ')'
-                        );
-                        hoge = '';
-                        foo = 0;
-                        for (i = 1; i < 6; i++) {
-                            if (opt[i] !== '0') hoge += ' ' + ResourceName[i - 1] + ':' + opt[i];
-                            foo += this.game.trade.destroy[i - 1] = parseInt(opt[i]);
-                        }
-                        if (hoge === '')
-                            this.chat('?', 'deeppink', '国内貿易(出)->なし');
-                        else
-                            this.chat('?', 'deeppink', '国内貿易(出)->' + hoge);
-                        hoge = '';
-                        bar = 0;
-                        for (i = 6; i < 11; i++) {
-                            if (opt[i] !== '0') hoge += ' ' + ResourceName[i - 6] + ':' + opt[i];
-                            bar += this.game.trade.create[i - 6] = parseInt(opt[i]);
-                        }
-                        if (hoge === '')
-                            this.chat('?', 'deeppink', '国内貿易(求)->なし');
-                        else
-                            this.chat('?', 'deeppink', '国内貿易(求)->' + hoge);
-                        if (foo === 0 || bar === 0) {
-                            this.chat('?', 'deeppink', '互いに最低1枚の資源が必要です。');
-                            this.game.phase = Phase.Main;
-                        } else {
-                            hoge = false;
-                            for (i = 0; i < 5; i++) {
-                                if (this.game.trade.destroy[i] > 0 && this.game.trade.create[i] > 0) {
-                                    hoge = true;
-                                    break;
-                                }
-                            }
-                            if (hoge) {
-                                this.chat('?', 'deeppink', '偽装譲渡はできません。');
-                                this.game.phase = Phase.Main;
-                            } else {
-                                this.game.phase = Phase.DomesticTrade2;
-                            }
-                        }
-                    }
-                    break;
-                case 'y':
-                    if (
-                           this.game.phase === Phase.DomesticTrade2
-                        && this.game.playerList[this.game.trade.playerIdx].uid === uid
-                    ) {
-                        this.chat('?', 'deeppink', '拒否されました。');
-                        this.game.phase = Phase.Main;
-                    }
-                    break;
-                case 'z':
-                    if (
-                           this.game.phase === Phase.DomesticTrade2
-                        && this.game.playerList[this.game.trade.playerIdx].uid === uid
-                    ) {
-                        opt = Game.option(msg);
+                case 'd':
+                    (function (that) {
+                        var game = that.game;
+                        var mt = that.mt;
+                        var playerList = game.playerList;
+                        
                         if (
-                               this.game.playerList[this.game.trade.playerIdx].resource[Resource.Brick] >= this.game.trade.create[Resource.Brick]
-                            && this.game.playerList[this.game.trade.playerIdx].resource[Resource.Wool] >= this.game.trade.create[Resource.Wool]
-                            && this.game.playerList[this.game.trade.playerIdx].resource[Resource.Ore] >= this.game.trade.create[Resource.Ore]
-                            && this.game.playerList[this.game.trade.playerIdx].resource[Resource.Grain] >= this.game.trade.create[Resource.Grain]
-                            && this.game.playerList[this.game.trade.playerIdx].resource[Resource.Lumber] >= this.game.trade.create[Resource.Lumber]
+                               playerList[0].uid !== ''
+                            && playerList[1].uid !== ''
+                            && playerList[2].uid !== ''
                         ) {
-                            for (i = 0; i < 5; i++) {
-                                Game.huntResource(this.game, this.game.active, this.game.trade.playerIdx, i, this.game.trade.destroy[i]);
-                                Game.huntResource(this.game, this.game.trade.playerIdx, this.game.active, i, this.game.trade.create[i]);
-                            }
-                            this.chat('?', 'deeppink', '交換しました。');
-                        } else {
-                            this.chat(
-                                '?', 'deeppink',
-                                this.game.playerList[this.game.trade.playerIdx].uid
-                                + '(' + ColorName[this.game.trade.playerIdx]
-                                + ')の資源不足のため交換できません。'
+                            Game.start(game, mt);
+                            Dice.clear(that.dice, mt);
+
+                            var active = game.active;
+                            
+                            that.chat(
+                                  '?'
+                                , 'orange'
+                                , '--「' + playerList[active].uid + '(' + COLOR_NAME[active] + ')」ターン--'
                             );
+                            
+                            that.isPlaying = true;
+                            game.sound = Sound.OPENING;
                         }
-                        this.game.phase = Phase.Main;
-                    }
-                    break;
-                case 'A':
-                    if (
-                           (this.game.phase === Phase.DiceRoll || this.game.phase === Phase.Main)
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        this.chat(
-                            '?', 'deeppink',
-                            '**' + this.game.playerList[this.game.active].uid
-                            + '(' + ColorName[this.game.active] + ')が勝利しました**'
-                        );
-                        for (i = this.game.playerNumber - 1; i >= 0; i--) this.game.playerList[i].uid = '';
-                        this.game.playerNumber = 4;
-                        this.game.state = State.Ready;
-                        this.game.sound = 'finish';
-                        this.isPlaying = false;
-                    }
-                    break;
-                case 'B':
-                    if (
-                           this.game.phase === Phase.Main
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        for (i = 0; i < 5; i++) {
-                            this.game.playerList[this.game.active].wakeCard[i] += this.game.playerList[this.game.active].sleepCard[i];
-                            this.game.playerList[this.game.active].sleepCard[i] = 0;
-                        }
-                        this.game.playerList[this.game.active].isPlayedCard = false;
-                        this.game.dice1 = 0;
-                        this.game.dice2 = 0;
-                        this.game.active = (this.game.active + 1) % this.game.playerNumber;
-                        this.game.phase = Phase.DiceRoll;
-                        this.game.sound = 'end';
-                    }
-                    break;
-                case 'C':
-                    if (
-                           (this.game.phase === Phase.DiceRoll || this.game.phase === Phase.Main)
-                        && this.game.playerList[this.game.active].uid === uid
-                        && !this.game.playerList[this.game.active].isPlayedCard
-                        && this.game.playerList[this.game.active].wakeCard[Card.Soldier] > 0
-                    ) {
-                        Game.playCard(this.game, Card.Soldier);
-                        if (this.game.largestArmy === -1) {
-                            if (this.game.playerList[this.game.active].deadCard[Card.Soldier] >= 3) {
-                                this.game.largestArmy = this.game.active;
-                                this.game.playerList[this.game.active].bonus += 2;
-                                this.chat(
-                                    '?', 'deeppink',
-                                    '**' + this.game.playerList[this.game.active].uid
-                                    + '(' + ColorName[this.game.active] + ')' + 'が騎士賞を獲得しました**'
-                                );
-                                this.game.sound = 'get';
-                            }
-                        } else if (
-                               this.game.largestArmy !== this.game.active
-                            && this.game.playerList[this.game.active].deadCard[Card.Soldier] > this.game.playerList[this.game.largestArmy].deadCard[Card.Soldier]
-                        ) {
-                            this.game.playerList[this.game.largestArmy].bonus -= 2;
-                            this.game.largestArmy = this.game.active;
-                            this.game.playerList[this.game.active].bonus += 2;
-                            this.chat(
-                                '?', 'deeppink',
-                                '**' + this.game.playerList[this.game.active].uid
-                                + '(' + ColorName[this.game.active] + ')' + 'が騎士賞を獲得しました**'
-                            );
-                            this.game.sound = 'get';
-                        }
-                        this.game.phase = Phase.Soldier1;
-                    }
-                    break;
-                case 'D':
-                    if (
-                           this.game.phase === Phase.Soldier1
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        opt = Game.option(msg);
-                        this.game.robber = parseInt(opt[0]);
-                        foo = false;
-                        for (i = TileLink[this.game.robber].length; i >= 0; i--) {
-                            if (
-                                   (this.game.settlementList[TileLink[this.game.robber][i]] & 0xff00) !== SettlementRank.None
-                                && (this.game.settlementList[TileLink[this.game.robber][i]] & 0x00ff) !== this.game.active
-                                && Game.sumPlayerResource(this.game, this.game.settlementList[TileLink[this.game.robber][i]] & 0x00ff) > 0
-                            ) foo = true;
-                        }
-                        if (foo) {
-                            this.game.phase = Phase.Soldier2;
-                        } else {
-                            if (this.game.dice1 === 0)
-                                this.game.phase = Phase.DiceRoll;
-                            else
-                                this.game.phase = Phase.Main;
-                        }
-                    }
-                    break;
-                case 'E':
-                    if (
-                           this.game.phase === Phase.Soldier2
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        opt = Game.option(msg);
-                        Game.robberResource(this.game, opt[0], this.mt);
-                        this.chat(
-                            '?', 'deeppink',
-                            '資源を１枚略奪->' + this.game.playerList[opt[0]].uid
-                            + '(' + ColorName[parseInt(opt[0])] + ')'
-                        );
-                        if (this.game.dice1 === 0)
-                            this.game.phase = Phase.DiceRoll;
-                        else
-                            this.game.phase = Phase.Main;
-                    }
-                    break;
-                case 'F':
-                    if (
-                           (this.game.phase === Phase.DiceRoll || this.game.phase === Phase.Main)
-                        && this.game.playerList[this.game.active].uid === uid
-                        && !this.game.playerList[this.game.active].isPlayedCard
-                        && this.game.playerList[this.game.active].wakeCard[Card.RoadBuilding] > 0
-                    ) {
-                        Game.playCard(this.game, Card.RoadBuilding);
-                        this.game.phase = Phase.RoadBuilding1;
-                    }
-                    break;
-                case 'G':
-                    if (
-                           this.game.phase === Phase.RoadBuilding1
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        opt = Game.option(msg);
-                        i = Game.buildRoad(this.game, opt[0]);
-                        if (i !== -1) {
-                            this.chat(
-                                '?', 'deeppink',
-                                '**' + this.game.playerList[i].uid
-                                + '(' + ColorName[i] + ')'
-                                + 'が道賞を獲得しました**'
-                            );
-                            this.game.sound = 'get';
-                        } else {
-                            this.game.sound = 'build';
-                        }
-                        if (Game.canBuildRoads(this.game)) {
-                            this.game.phase = Phase.RoadBuilding2;
-                        } else {
-                            if (this.game.dice1 === 0)
-                                this.game.phase = Phase.DiceRoll;
-                            else
-                                this.game.phase = Phase.Main;
-                        }
-                    }
-                    break;
-                case 'H':
-                    if (
-                           this.game.phase === Phase.RoadBuilding2
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        opt = Game.option(msg);
-                        i = Game.buildRoad(this.game, opt[0]);
-                        if (i !== -1) {
-                            this.chat(
-                                '?', 'deeppink',
-                                '**' + this.game.playerList[i].uid
-                                + '(' + ColorName[i] + ')'
-                                + 'が道賞を獲得しました**'
-                            );
-                            this.game.sound = 'get';
-                        } else {
-                            this.game.sound = 'build';
-                        }
-                        if (this.game.dice1 === 0)
-                            this.game.phase = Phase.DiceRoll;
-                        else
-                            this.game.phase = Phase.Main;
-                    }
-                    break;
-                case 'I':
-                    if (
-                           (this.game.phase === Phase.DiceRoll || this.game.phase === Phase.Main)
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        Game.playCard(this.game, Card.YearOfPlenty);
-                        this.game.phase = Phase.YearOfPlenty1;
-                    }
-                    break;
-                case 'J':
-                    opt = Game.option(msg);
-                    if (
-                           this.game.phase === Phase.YearOfPlenty1
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        Game.createResource(this.game, this.game.active, opt[0], 1);
-                        this.chat(
-                            '?', 'deeppink',
-                            ResourceName[parseInt(opt[0])] + 'を生産しました。'
-                        );
-                        if (Game.sumResource(this.game) > 0) {
-                            this.game.phase = Phase.YearOfPlenty2;
-                        } else {
-                            if (this.game.dice1 === 0)
-                                this.game.phase = Phase.DiceRoll;
-                            else
-                                this.game.phase = Phase.Main;
-                        }
-                    }
-                    break;
-                case 'K':
-                    opt = Game.option(msg);
-                    if (
-                           this.game.phase === Phase.YearOfPlenty2
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        Game.createResource(this.game, this.game.active, opt[0], 1);
-                        this.chat(
-                            '?', 'deeppink',
-                            ResourceName[opt[0]] + 'を生産しました。'
-                        );
-                        if (this.game.dice1 === 0)
-                            this.game.phase = Phase.DiceRoll;
-                        else
-                            this.game.phase = Phase.Main;
-                    }
-                    break;
-                case 'L':
-                    if (
-                           (this.game.phase === Phase.DiceRoll || this.game.phase === Phase.Main)
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        Game.playCard(this.game, Card.Monopoly);
-                        this.game.phase = Phase.Monopoly;
-                    }
-                    break;
-                case 'M':
-                    if (
-                           this.game.phase === Phase.Monopoly
-                        && this.game.playerList[this.game.active].uid === uid
-                    ) {
-                        opt = Game.option(msg);
-                        for (i = 0; i < this.game.playerList.length; i++) {
-                            if (i !== this.game.active) {
-                                this.game.playerList[this.game.active].resource[opt[0]] += this.game.playerList[i].resource[opt[0]];
-                                this.game.playerList[i].resource[opt[0]] = 0;
-                            }
-                        }
-                        this.chat(
-                            '?', 'deeppink',
-                            ResourceName[opt[0]] + 'を独占しました。'
-                        );
-                        if (this.game.dice1 === 0)
-                            this.game.phase = Phase.DiceRoll;
-                        else
-                            this.game.phase = Phase.Main;
-                    }
+                    })(this);
                     break;
             }
+        } else {
+            if (Game.hasPriorityUid(this.game, uid)) {
+                switch (message[0]) {
+                    case 'e':
+                        (function (that) {
+                            var game = that.game;
+                            
+                            switch (game.phase) {
+                                case Phase.BUILD_ROAD:
+                                case Phase.BUILD_SETTLEMENT:
+                                case Phase.BUILD_CITY:
+                                case Phase.DOMESTIC_TRADE1:
+                                case Phase.INTERNATIONAL_TRADE:
+                                    game.phase = Phase.MAIN;
+                                    break;
+                            }
+                        })(this);
+                        break;
+                    case 'f':
+                        (function (that) {
+                            var game = that.game;
+                            
+                            if (game.phase === Phase.SETUP_SETTLEMENT1) {
+                                that.chat('?', 'deeppink', '家を配置しました。');
+                                
+                                var index = that.split(message)[0];
+                                Game.buildSettlement(game, index);
+                                
+                                game.phase = Phase.SETUP_ROAD1;
+                                game.sound = Sound.BUILD;
+                            }
+                        })(this);
+                        break;
+                    case 'g':
+                        (function (that) {
+                            var game = that.game;
+                            
+                            if (game.phase === Phase.SETUP_ROAD1) {
+                                that.chat('?', 'deeppink', '道を配置しました。');
+                                
+                                var index = that.split(message)[0];
+                                Game.buildRoad(game, index);
+                                
+                                if (game.active === game.playerSize - 1) {
+                                    game.phase = Phase.SETUP_SETTLEMENT2;
+                                } else {
+                                    var active = game.active = ++game.active;
+                                    
+                                    var priority = game.priority;
+                                    priority.length = 0;
+                                    priority.push(active);
+                                    
+                                    that.chat(
+                                          '?'
+                                        , 'orange'
+                                        , '--「' + game.playerList[active].uid + '(' + COLOR_NAME[active] + ')」ターン--'
+                                    );
+                                    
+                                    game.phase = Phase.SETUP_SETTLEMENT1;
+                                }
+
+                                game.sound = Sound.PASS;
+                            }
+                        })(this);
+                        break;
+                    case 'h':
+                        (function (that) {
+                            var game = that.game;
+                            
+                            if (game.phase === Phase.SETUP_SETTLEMENT2) {
+                                that.chat('?', 'deeppink', '家を配置しました。');
+                                
+                                var active = game.active;
+                                var index = parseInt(that.split(message)[0]);
+                                var secondSettlement = game.playerList[active].secondSettlement = parseInt(index);
+                                
+                                Game.buildSettlement(game, secondSettlement);
+                                
+                                var landList = game.landList;
+                                
+                                var i;
+                                var len1 = LAND_LINK.length;
+                                for (i = 0; i < len1; i++) {
+                                    if (landList[i] !== Land.DESERT) {
+                                        var j;
+                                        var len2 = LAND_LINK[i].length;
+                                        for (j = 0; j < len2; j++) {
+                                            if (LAND_LINK[i][j] === secondSettlement) {
+                                                Game.gainResource(game, active, landList[i], 1);
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                game.phase = Phase.SETUP_ROAD2;
+                                game.sound = Sound.BUILD;
+                            }
+                        })(this);
+                        break;
+                    case 'i':
+                        (function (that) {
+                            var game = that.game;
+                            
+                            if (game.phase === Phase.SETUP_ROAD2) {
+                                that.chat('?', 'deeppink', '道を配置しました。');
+                                
+                                var index = that.split(message)[0];
+                                Game.buildRoad(game, index);
+                                
+                                var active = game.active;
+                                if (active === 0) {
+                                    game.phase = Phase.DICE;
+                                    game.sound = Sound.BUILD;
+                                } else {
+                                    active = --game.active;
+                                    
+                                    var priority = game.priority;
+                                    priority.length = 0;
+                                    priority.push(active);
+                                    
+                                    that.chat(
+                                          '?'
+                                        , 'orange'
+                                        , '--「' + game.playerList[active].uid + '(' + COLOR_NAME[active] + ')」ターン--'
+                                    );
+                                    
+                                    game.phase = Phase.SETUP_SETTLEMENT2;
+                                    game.sound = Sound.PASS;
+                                }
+                            }
+                        })(this);
+                        break;
+                    case 'j':
+                        this.diceRoll();
+                        break;
+                    case 'k':
+                        (function (that) {
+                            var game = that.game;
+                            var param = that.split(message);
+                            var color = parseInt(param[0]);
+                            var type = param[1];
+                            var player = game.playerList[color];
+                            
+                            if (
+                                   game.phase === Phase.BURST
+                                && player.burst > 0
+                                && player.resource[type] > 0
+                                && player.uid === uid
+                            ) {
+                                that.chat(
+                                      '?'
+                                    , FONT_COLOR[color]
+                                    , player.uid + '(' + COLOR_NAME[color] + ')「' + RESOURCE_NAME[type] + '」廃棄'
+                                );
+                                
+                                Game.loseResource(game, color, type, 1);
+                                player.burst--;
+                                
+                                if (player.burst === 0) {
+                                    var priority = game.priority;
+
+                                    var i;
+                                    var len1 = priority.length;
+                                    for (i = 0; i < len1; i++) {
+                                        if (priority[i] === color) { priority.splice(i, 1); }
+                                    }
+                                    
+                                    if (priority.length === 0) {
+                                        priority.push(game.active);
+                                        game.phase = Phase.ROBBER1;
+                                    }
+                                }
+                            }
+                        })(this);
+                        break;
+                    case 'l':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.ROBBER1) {
+                                that.chat('?', 'deeppink', '盗賊を移動しました。');
+
+                                var robber = game.robber =parseInt(that.split(message)[0]);
+                                var settlementList = game.settlementList;
+                                var playerList = game.playerList;
+                                var active = game.active;
+                                var canPillage = false;
+
+                                var i;
+                                var len1 = LAND_LINK[robber].length;
+                                for (i = 0; !canPillage && i < len1; i++) {
+                                    var settlement = settlementList[LAND_LINK[robber][i]];
+                                    var rank = settlement & 0xff00;
+                                    var color = settlement & 0x00ff;
+                                    
+                                    if (rank !== SettlementRank.NONE && color !== active) {
+                                        var resource = playerList[color].resource;
+                                        
+                                        if (
+                                              resource[Resource.BRICK]
+                                            + resource[Resource.WOOL]
+                                            + resource[Resource.ORE]
+                                            + resource[Resource.GRAIN]
+                                            + resource[Resource.LUMBER]
+                                            > 0
+                                        ) {
+                                            canPillage = true;
+                                        }
+                                    }
+                                }
+                                
+                                if (canPillage) {
+                                    game.phase = Phase.ROBBER2;
+                                } else {
+                                    game.phase = Phase.MAIN;
+                                }
+
+                                game.sound = Sound.BUILD;
+                            }
+                        })(this);
+                        break;
+                    case 'm':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.ROBBER2) {
+                                var loseColor = that.split(message)[0];
+                                var losePlayer = game.playerList[loseColor];
+
+                                that.chat(
+                                      '?'
+                                    , FONT_COLOR[loseColor]
+                                    , '資源の略奪「' + losePlayer.uid + '(' + COLOR_NAME[loseColor] + ')」'
+                                );
+
+                                var loseResource = losePlayer.resource;
+                                var tmp = [];
+
+                                var i;
+                                var len1 = loseResource.length;
+                                for (i = 0; i < len1; i++) {
+                                    var j;
+                                    var len2 = loseResource[i];
+                                    for (j = 0; j < len2; j++) { tmp.push(i); }
+                                }
+
+                                i = tmp[that.mt.nextInt(0, tmp.length - 1)];
+                                
+                                loseResource[i]--;
+                                game.playerList[game.active].resource[i]++;
+                                
+                                game.phase = Phase.MAIN;
+                                game.sound = Sound.BUILD;
+                            }
+                        })(this);
+                        break;
+                    case 'n':
+                        if (this.game.phase === Phase.MAIN) { this.game.phase = Phase.BUILD_ROAD; }
+                        break;
+                    case 'o':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.BUILD_ROAD) {
+                                that.chat('?', 'deeppink', '道を配置しました。');
+
+                                var active = game.active;
+
+                                Game.loseResource(game, active, Resource.BRICK, 1);
+                                Game.loseResource(game, active, Resource.LUMBER, 1);
+
+                                var index = that.split(message)[0];
+                                Game.buildRoad(game, index);
+                                
+                                game.phase = Phase.MAIN;
+
+                                var i = Game.longestRoad(game);
+
+                                if (i !== Index.NONE) {
+                                    that.chat(
+                                        '?'
+                                      , FONT_COLOR[i]
+                                      , '**' + game.playerList[i].uid + '(' + COLOR_NAME[i] + ')が道賞を獲得しました**'
+                                    );
+                                    
+                                    game.sound = Sound.GET;
+                                } else {
+                                    game.sound = Sound.BUILD;
+                                }
+                            }
+                        })(this);
+                        break;
+                    case 'p':
+                        if (this.game.phase === Phase.MAIN) { this.game.phase = Phase.BUILD_SETTLEMENT; }
+                        break;
+                    case 'q':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.BUILD_SETTLEMENT) {
+                                that.chat('?', 'deeppink', '家を配置しました。');
+
+                                var active = game.active;
+
+                                Game.loseResource(game, active, Resource.BRICK, 1);
+                                Game.loseResource(game, active, Resource.WOOL, 1);
+                                Game.loseResource(game, active, Resource.GRAIN, 1);
+                                Game.loseResource(game, active, Resource.LUMBER, 1);
+
+                                var index = parseInt(that.split(message)[0]);
+                                Game.buildSettlement(game, index);
+                                
+                                game.phase = Phase.MAIN;
+                                
+                                var i = Game.longestRoad(game);
+                                
+                                if (i !== Index.NONE) {
+                                    that.chat(
+                                        '?'
+                                      , FONT_COLOR[i]
+                                      , '**' + game.playerList[i].uid + '(' + COLOR_NAME[i] + ')が道賞を獲得しました**'
+                                    );
+                                    
+                                    game.sound = Sound.GET;
+                                } else {
+                                    game.sound = Sound.BUILD;
+                                }
+                            }
+                        })(this);
+                        break;
+                    case 'r':
+                        if (this.game.phase === Phase.MAIN) { this.game.phase = Phase.BUILD_CITY; }
+                        break;
+                    case 's':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.BUILD_CITY) {
+                                that.chat('?', 'deeppink', '街を配置しました。');
+
+                                var active = game.active;
+
+                                Game.loseResource(game, active, Resource.ORE, 3);
+                                Game.loseResource(game, active, Resource.GRAIN, 2);
+
+                                var index = that.split(message)[0];
+                                Game.buildCity(game, index);
+                                
+                                game.phase = Phase.MAIN;
+                                game.sound = Sound.BUILD;
+                            }
+                        })(this);
+                        break;
+                    case 't':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.MAIN) {
+                                that.chat('?', 'deeppink', 'カードを引きました。');
+
+                                var active = game.active;
+                                var activePlayer = game.playerList[active];
+
+                                Game.loseResource(game, active, Resource.WOOL, 1);
+                                Game.loseResource(game, active, Resource.ORE, 1);
+                                Game.loseResource(game, active, Resource.GRAIN, 1);
+
+                                var i = game.cardStock.shift();
+
+                                activePlayer.sleepCard[i]++;
+                                if (i === Card.VICTORY_POINT) {
+                                    activePlayer.bonusScore++;
+                                }
+
+                                game.sound = Sound.BUILD;
+                            }
+                        })(this);
+                        break;
+                    case 'u':
+                        if (this.game.phase === Phase.MAIN) { this.game.phase = Phase.DOMESTIC_TRADE1; }
+                        break;
+                    case 'v':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.DOMESTIC_TRADE1) {
+                                var param = that.split(message);
+                                var playerList = game.playerList;
+                                var trade = game.trade;
+                                var playerIndex = trade.playerIndex = parseInt(param[0]);
+
+                                that.chat(
+                                      '?'
+                                    , FONT_COLOR[playerIndex]
+                                    , '国内貿易を申し込みました「'
+                                      + playerList[playerIndex].uid
+                                      + '(' + COLOR_NAME[playerIndex] + ')」'
+                                );
+
+                                var tmp = '';
+                                var inputSum = 0;
+
+                                var i;
+                                for (i = 1; i < 6; i++) {
+                                    if (param[i] !== '0') { tmp += '「' + RESOURCE_NAME[i - 1] + ':' + param[i] + '」'; }
+                                    inputSum += trade.input[i - 1] = parseInt(param[i]);
+                                }
+                                
+                                if (tmp === '') {
+                                    that.chat('?', 'deeppink', '国内貿易(出)「なし」');
+                                } else {
+                                    that.chat('?', 'deeppink', '国内貿易(出)' + tmp);
+                                }
+
+                                tmp = '';
+                                var outputSum = 0;
+                                
+                                for (i = 6; i < 11; i++) {
+                                    if (param[i] !== '0') { tmp += '「' + RESOURCE_NAME[i - 6] + ':' + param[i] + '」'; }
+                                    outputSum += trade.output[i - 6] = parseInt(param[i]);
+                                }
+                                
+                                if (tmp === '') {
+                                    that.chat('?', 'deeppink', '国内貿易(求)「なし」');
+                                } else {
+                                    that.chat('?', 'deeppink', '国内貿易(求)' + tmp);
+                                }
+
+                                if (inputSum === 0 || outputSum === 0) {
+                                    that.chat('?', 'deeppink', 'お互いに最低1枚の資源が必要です。');
+
+                                    game.phase = Phase.MAIN;
+                                } else {
+                                    var isNegotiation = false;
+
+                                    for (i = 0; !isNegotiation && i < 5; i++) {
+                                        if (trade.input[i] > 0 && trade.output[i] > 0) { isNegotiation = true; }
+                                    }
+
+                                    if (isNegotiation) {
+                                        that.chat('?', 'deeppink', '偽装譲渡はできません。');
+                                        game.phase = Phase.MAIN;
+                                    } else {
+                                        var priority = game.priority;
+                                        priority.length = 0;
+                                        priority.push(playerIndex);
+
+                                        game.phase = Phase.DOMESTIC_TRADE2;
+                                    }
+                                }
+                            }
+                        })(this);
+                        break;
+                    case 'w':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.DOMESTIC_TRADE2) {
+                                var trade = game.trade;
+                                var output = trade.output;
+                                var tradeResource = game.playerList[trade.playerIndex].resource;
+
+                                if (
+                                       tradeResource[Resource.BRICK] >= output[Resource.BRICK]
+                                    && tradeResource[Resource.WOOL] >= output[Resource.WOOL]
+                                    && tradeResource[Resource.ORE] >= output[Resource.ORE]
+                                    && tradeResource[Resource.GRAIN] >= output[Resource.GRAIN]
+                                    && tradeResource[Resource.LUMBER] >= output[Resource.LUMBER]
+                                ) {
+                                    var active = game.active;
+                                    var activeResource = game.playerList[active].resource;
+                                    var input = trade.input;
+
+                                    var i;
+                                    for (i = 0; i < 5; i++) {
+                                        activeResource[i] -= input[i];
+                                        activeResource[i] += output[i];
+                                        tradeResource[i] += input[i];
+                                        tradeResource[i] -= output[i];
+                                    }
+                                    
+                                    that.chat('?', 'deeppink', '交換しました。');
+                                } else {
+                                    that.chat('?', 'deeppink', '資源が足りませんでした。');
+                                }
+
+                                var priority = game.priority;
+                                priority.length = 0;
+                                priority.push(active);
+                                that.game.phase = Phase.MAIN;
+                            }
+                        })(this);
+                        break;
+                    case 'x':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.DOMESTIC_TRADE2) {
+                                that.chat('?', 'deeppink', '拒否されました。');
+
+                                var active = game.active;
+                                var priority = game.priority;
+                                priority.length = 0;
+                                priority.push(active);
+
+                                that.game.phase = Phase.MAIN;
+                            }
+                        })(this);
+                        break;
+                    case 'y':
+                        if (this.game.phase === Phase.MAIN) { this.game.phase = Phase.INTERNATIONAL_TRADE; }
+                        break;
+                    case 'z':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.INTERNATIONAL_TRADE) {
+                                that.chat('?', 'deeppink', '海外貿易を申し込みました。');
+
+                                var param = that.split(message);
+                                var active = game.active;
+
+                                var tmp = '海外貿易(出)';
+
+                                var i;
+                                for (i = 0; i < 5; i++) {
+                                    if (param[i] !== '0') {
+                                        tmp += '「' + RESOURCE_NAME[i] + ':' + param[i] + '」';
+                                        Game.loseResource(game, active, i, parseInt(param[i]));
+                                    }
+                                }
+                                
+                                that.chat('?', 'deeppink', tmp);
+
+                                var tmp = '海外貿易(求)';
+
+                                for (i = 5; i < 10; i++) {
+                                    if (param[i] !== '0') {
+                                        tmp += '「' + RESOURCE_NAME[i - 5] + ':' + param[i] + '」';
+                                        Game.gainResource(game, active, i - 5, parseInt(param[i]));
+                                    }
+                                }
+                                
+                                that.chat('?', 'deeppink', tmp);
+
+                                that.chat('?', 'deeppink', '交換しました。');
+                                
+                                that.game.phase = Phase.MAIN;
+                            }
+                        })(this);
+                        break;
+                    case 'A':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.DICE || game.phase === Phase.MAIN) {
+                                that.chat(
+                                      '?'
+                                    , 'deeppink'
+                                    , '++勝利 おめでとう++'
+                                );
+
+                                var active = game.active;
+                                var playerList = game.playerList;
+                                var activePlayer = playerList[active];
+
+                                that.chat(
+                                      '?'
+                                    , 'deeppink'
+                                    , activePlayer.uid + '(' + COLOR_NAME[active] + ')'
+                                );
+
+                                var i;
+                                for (i = 0; i < game.playerSize; i++) { playerList[i].uid = ''; }
+                                
+                                game.playerSize = 4;
+                                game.state = State.READY;
+                                game.isPlaying = false;
+
+                                game.sound = Sound.ENDING;
+                            }
+                        })(this);
+                        break;
+                    case 'B':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.MAIN) {
+                                var active = game.active;
+                                var playerList = game.playerList;
+                                var activePlayer = playerList[active];
+                                var wakeCard = activePlayer.wakeCard;
+                                var sleepCard = activePlayer.sleepCard;
+
+                                var i;
+                                for (i = 0; i < 5; i++) {
+                                    wakeCard[i] += sleepCard[i];
+                                    sleepCard[i] = 0;
+                                }
+                                
+                                game.canPlayCard = true;
+                                game.dice1 = game.dice2 = Index.NONE;
+                                active = game.active = (active + 1) % game.playerSize;
+
+                                var priority = game.priority;
+                                priority.length = 0;
+                                priority.push(game.active);
+                                
+                                that.chat(
+                                      '?'
+                                    , 'orange'
+                                    , '--「' + playerList[active].uid + '(' + COLOR_NAME[active] + ')」ターン--'
+                                );
+
+                                game.phase = Phase.DICE;
+                                game.sound = Sound.PASS;
+                            }
+                        })(this);
+                        break;
+                    case 'C':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.DICE || game.phase === Phase.MAIN) {
+                                that.chat('?', 'deeppink', 'カード「騎士」');
+
+                                var active = game.active;
+                                var activePlayer = game.playerList[active];
+
+                                activePlayer.wakeCard[Card.SOLDIER]--;
+                                activePlayer.deadCard[Card.SOLDIER]++;
+                                
+                                game.canPlayCard = false;
+
+                                game.phase = Phase.SOLDIER1;
+
+                                var i = Game.largestArmy(game);
+
+                                if (i !== Index.NONE) {
+                                    that.chat(
+                                        '?'
+                                        , FONT_COLOR[i]
+                                        , '**' + game.playerList[i].uid + '(' + COLOR_NAME[i] + ')が騎士賞を獲得しました**'
+                                    );
+
+                                    game.sound = Sound.GET;
+                                } else {
+                                    game.sound = Sound.BUILD;
+                                }
+                            }
+                        })(this);
+                        break;
+                    case 'D':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.SOLDIER1) {
+                                that.chat('?', 'deeppink', '盗賊を移動しました。');
+
+                                var playerList = game.playerList;
+                                var settlementList = game.settlementList;
+                                var robber = game.robber = parseInt(that.split(message)[0]);
+                                var canPillage = false;
+
+                                var i;
+                                var len1 = LAND_LINK[robber].length;
+                                for (i = 0; !canPillage && i < len1; i++) {
+                                    var settlement = settlementList[LAND_LINK[robber][i]];
+                                    var rank = settlement & 0xff00;
+                                    var color = settlement & 0x00ff;
+                                    
+                                    if (rank !== SettlementRank.NONE && color !== game.active) {
+                                        var resource = playerList[color].resource;
+                                        
+                                        if (
+                                              resource[Resource.BRICK]
+                                            + resource[Resource.WOOL]
+                                            + resource[Resource.ORE]
+                                            + resource[Resource.GRAIN]
+                                            + resource[Resource.LUMBER]
+                                            > 0
+                                        ) {
+                                            canPillage = true;
+                                        }
+                                    }
+                                }
+                                
+                                if (canPillage) {
+                                    game.phase = Phase.SOLDIER2;
+                                } else {
+                                    if (game.dice1 === Index.NONE) {
+                                        game.phase = Phase.DICE;
+                                    } else {
+                                        game.phase = Phase.MAIN;
+                                    }
+                                }
+                                
+                                game.sound = Sound.BUILD;
+                            }
+                        })(this);
+                        break;
+                    case 'E':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.SOLDIER2) {
+                                var loseColor = that.split(message)[0];
+                                var losePlayer = game.playerList[loseColor];
+
+                                that.chat(
+                                      '?'
+                                    , FONT_COLOR[loseColor]
+                                    , '資源の略奪「' + losePlayer.uid + '(' + COLOR_NAME[loseColor] + ')」'
+                                );
+
+                                var loseResource = losePlayer.resource;
+                                var tmp = [];
+
+                                var i;
+                                var len1 = loseResource.length;
+                                for (i = 0; i < len1; i++) {
+                                    var j;
+                                    var len2 = loseResource[i];
+                                    for (j = 0; j < len2; j++) { tmp.push(i); }
+                                }
+                                
+                                i = tmp[that.mt.nextInt(0, tmp.length - 1)];
+
+                                loseResource[i]--;
+                                game.playerList[game.active].resource[i]++;
+                                
+                                if (game.dice1 === Index.NONE) {
+                                    game.phase = Phase.DICE;
+                                } else {
+                                    game.phase = Phase.MAIN;
+                                }
+
+                                game.sound = Sound.BUILD;
+                            }
+                        })(this);
+                        break;
+                    case 'F':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.DICE || game.phase === Phase.MAIN) {
+                                that.chat('?', 'deeppink', 'カード「街道」');
+
+                                var activePlayer = game.playerList[game.active];
+
+                                activePlayer.wakeCard[Card.ROAD_BUILDING]--;
+                                activePlayer.deadCard[Card.ROAD_BUILDING]++;
+                                
+                                game.canPlayCard = false;
+                                
+                                if (activePlayer.roadStock > 0 && Game.hasCanBuildRoad(game)) {
+                                    game.phase = Phase.ROAD_BUILDING1;
+                                } else {
+                                    if (game.dice1 === Index.NONE) {
+                                        game.phase = Phase.DICE;
+                                    } else {
+                                        game.phase = Phase.MAIN;
+                                    }
+                                }
+
+                                game.sound = Sound.BUILD;
+                            }
+                        })(this);
+                        break;
+                    case 'G':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.ROAD_BUILDING1) {
+                                that.chat('?', 'deeppink', '道を配置しました。');
+
+                                var index = that.split(message)[0];
+                                Game.buildRoad(game, index);
+                                
+                                if (game.playerList[game.active].roadStock > 0 && Game.hasCanBuildRoad(game)) {
+                                    game.phase = Phase.ROAD_BUILDING2;
+                                } else {
+                                    if (game.dice1 === Index.NONE) {
+                                        game.phase = Phase.DICE;
+                                    } else {
+                                        game.phase = Phase.MAIN;
+                                    }
+                                }
+
+                                var i = Game.longestRoad(game);
+                                
+                                if (i !== Index.NONE) {
+                                    that.chat(
+                                        '?'
+                                      , FONT_COLOR[i]
+                                      , '**' + game.playerList[i].uid + '(' + COLOR_NAME[i] + ')が道賞を獲得しました**'
+                                    );
+                                    
+                                    game.sound = Sound.GET;
+                                } else {
+                                    game.sound = Sound.BUILD;
+                                }
+                            }
+                        })(this);
+                        break;
+                    case 'H':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.ROAD_BUILDING2) {
+                                that.chat('?', 'deeppink', '道を配置しました。');
+
+                                var index = that.split(message)[0];
+                                Game.buildRoad(game, index);
+
+                                if (game.dice1 === Index.NONE) {
+                                    game.phase = Phase.DICE;
+                                } else {
+                                    game.phase = Phase.MAIN;
+                                }
+                                
+                                var i = Game.longestRoad(game);
+                                
+                                if (i !== Index.NONE) {
+                                    that.chat(
+                                        '?'
+                                      , FONT_COLOR[i]
+                                      , '**' + game.playerList[i].uid + '(' + COLOR_NAME[i] + ')が道賞を獲得しました**'
+                                    );
+                                    
+                                    game.sound = Sound.GET;
+                                } else {
+                                    game.sound = Sound.BUILD;
+                                }
+                            }
+                        })(this);
+                        break;
+                    case 'I':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.DICE || game.phase === Phase.MAIN) {
+                                that.chat('?', 'deeppink', 'カード「収穫」');
+
+                                var activePlayer = game.playerList[game.active];
+
+                                activePlayer.wakeCard[Card.YEAR_OF_PLENTY]--;
+                                activePlayer.deadCard[Card.YEAR_OF_PLENTY]++;
+
+                                game.canPlayCard = false;
+
+                                var resourceStock = game.resourceStock;
+
+                                if (
+                                      resourceStock[Resource.BRICK]
+                                    + resourceStock[Resource.WOOL]
+                                    + resourceStock[Resource.ORE]
+                                    + resourceStock[Resource.GRAIN]
+                                    + resourceStock[Resource.LUMBER]
+                                    > 0
+                                ) {
+                                    game.phase = Phase.YEAR_OF_PLENTY1;
+                                } else {
+                                    that.chat('?', 'deeppink', '資源不足のため収穫失敗。');
+
+                                    if (game.dice1 === Index.NONE) {
+                                        game.phase = Phase.DICE;
+                                    } else {
+                                        game.phase = Phase.MAIN;
+                                    }
+                                }
+
+                                game.sound = Sound.BUILD;
+                            }
+                        })(this);
+                        break;
+                    case 'J':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.YEAR_OF_PLENTY1) {
+                                var type = that.split(message)[0];
+
+                                that.chat(
+                                      '?'
+                                    , 'deeppink'
+                                    , '「' + RESOURCE_NAME[type] + '」を収穫しました。'
+                                );
+
+                                var resourceStock = game.resourceStock;
+                                resourceStock[type]--;
+                                game.playerList[game.active].resource[type]++;
+                                
+                                if (
+                                      resourceStock[Resource.BRICK]
+                                    + resourceStock[Resource.WOOL]
+                                    + resourceStock[Resource.ORE]
+                                    + resourceStock[Resource.GRAIN]
+                                    + resourceStock[Resource.LUMBER]
+                                    > 0
+                                ) {
+                                    game.phase = Phase.YEAR_OF_PLENTY2;
+                                } else {
+                                    if (game.dice1 === Index.NONE) {
+                                        game.phase = Phase.DICE;
+                                    } else {
+                                        game.phase = Phase.MAIN;
+                                    }
+                                }
+                                
+                                game.sound = Sound.BUILD;
+                            }
+                        })(this);
+                        break;
+                    case 'K':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.YEAR_OF_PLENTY2) {
+                                var type = that.split(message)[0];
+
+                                that.chat(
+                                      '?'
+                                    , 'deeppink'
+                                    , '「' + RESOURCE_NAME[type] + '」を収穫しました。'
+                                );
+
+                                game.resourceStock[type]--;
+                                game.playerList[game.active].resource[type]++;
+
+                                if (game.dice1 === Index.NONE) {
+                                    game.phase = Phase.DICE;
+                                } else {
+                                    game.phase = Phase.MAIN;
+                                }
+
+                                game.sound = Sound.BUILD;
+                            }
+                        })(this);
+                        break;
+                    case 'L':
+                        (function (that) {
+                            var game = that.game;
+
+                            if (game.phase === Phase.DICE || game.phase === Phase.MAIN) {
+                                that.chat('?', 'deeppink', 'カード「独占」');
+
+                                var activePlayer = game.playerList[game.active];
+                                activePlayer.wakeCard[Card.MONOPOLY]--;
+                                activePlayer.deadCard[Card.MONOPOLY]++;
+                                
+                                game.canPlayCard = false;
+
+                                game.phase = Phase.MONOPOLY;
+                                game.sound = Sound.BUILD;
+                            }
+                        })(this);
+                        break;
+                    case 'M':
+                        (function (that) {
+                            var game = that.game;
+
+                            if(game.phase === Phase.MONOPOLY) {
+                                var type = that.split(message)[0];
+
+                                that.chat(
+                                      '?'
+                                    , 'deeppink'
+                                    , '「' + RESOURCE_NAME[type] + '」を独占しました。'
+                                );
+
+                                var active = game.active;
+                                var playerList = game.playerList;
+                                var activeResource = playerList[active].resource;
+                                var playerSize = game.playerSize;
+
+                                var i;
+                                for (i = 0; i < playerSize; i++) {
+                                    if(i !== active) {
+                                        var loseResource = playerList[i].resource;
+
+                                        activeResource[type] += loseResource[type];
+                                        loseResource[type] = 0;
+                                    }
+                                }
+
+                                if (game.dice1 === Index.NONE) {
+                                    game.phase = Phase.DICE;
+                                } else {
+                                    game.phase = Phase.MAIN;
+                                }
+
+                                game.sound = Sound.ROBBER;
+                            }
+                        })(this);
+                        break;
+                }
+            }
         }
+        
         this.broadcast(JSON.stringify(this.game));
         this.game.sound = '';
     }
 }
 
-Cataso.prototype.onChat = function (user, msg) {
-    var i, color = 'white';
+Cataso.prototype.diceRoll = function () {
+    var game = this.game;
 
-    for (i = 0; i < this.game.playerList.length && color === 'white'; i++) {
-        if (this.game.playerList[i].uid === user.uid) {
-            switch (i) {
-                case 0:
-                    color = 'red';
-                    break;
-                case 1:
-                    color = 'dodgerblue';
-                    break;
-                case 2:
-                    color = 'yellow';
-                    break;
-                case 3:
-                    color = 'lime';
-                    break;
+    if (game.phase === Phase.DICE) {
+        var dice = this.dice;;
+
+        Dice.roll(dice);
+
+        game.dice1 = dice.first;
+        game.dice2 = dice.seccond;
+        
+        var dice = game.dice1 + game.dice2;
+        
+        this.chat(
+              '?'
+            , 'deeppink'
+            , 'ダイス「' + dice + '」'
+        );
+
+        var i;
+        var len1;
+        if (dice === 7) {
+            var playerSize = game.playerSize;
+
+            var playerList = game.playerList;
+            var isBurst = false;
+
+            for (i = 0; i < playerSize; i++) {
+                var player = playerList[i];
+                var resource = player.resource;
+
+                var sum = resource[Resource.BRICK]
+                        + resource[Resource.WOOL]
+                        + resource[Resource.ORE]
+                        + resource[Resource.GRAIN]
+                        + resource[Resource.LUMBER];
+
+                if (sum > 7) {
+                    isBurst = true;
+                    player.burst = Math.floor(sum / 2);
+                } else {
+                    player.burst = 0;
+                }
             }
-        }
-    }
+            
+            if (isBurst) {
+                var priority = game.priority;
+                priority.length = 0;
 
-    this.chat(user.uid, color, (msg.split('<').join('&lt;')).split('>').join('&gt;'));
-}
+                len1 = playerList.length;
+                for (i = 0; i < len1; i++) {
+                    if (playerList[i].burst > 0) { priority.push(i); }
+                }
 
-Cataso.prototype.onCommand = function (user, msg) {
-    this.basicCommand(user, msg);
-    switch (msg[0]) {
-        case '/reset':
-            if (this.ctrlr !== null && this.ctrlr.uid === user.uid) {
-                this.isPlaying = false;
-                Game.clear(this.game);
-                this.broadcast(JSON.stringify(this.game));
-                this.chat('?', 'deeppink', 'ゲームをリセットしました。');
+                this.chat(
+                      '?'
+                    , 'deeppink'
+                    , '**バースト発生**'
+                );
+                
+                game.phase = Phase.BURST;
             } else {
-                this.chat('?', 'deeppink', '管理者でないためリセットできません。');
+                game.phase = Phase.ROBBER1;
             }
-            break;
+            
+            game.sound = Sound.ROBBER;
+        } else {
+            var numberList = game.numberList;
+            var settlementList = game.settlementList;
+            var landList = game.landList;
+
+            var pool = [0, 0, 0, 0, 0];
+            var rank;
+            var color;
+
+            var j;
+            var len2;
+
+            len1 = numberList.length;
+            for (i = 0; i < len1; i++) {
+                if (i !== game.robber && numberList[i] === dice) {
+                    len2 = LAND_LINK[i].length;
+                    for (j = 0; j < len2; j++) {
+                        rank = settlementList[LAND_LINK[i][j]] & 0xff00;
+                        color = settlementList[LAND_LINK[i][j]] & 0x00ff;
+                        
+                        if (rank !== SettlementRank.NONE) {
+                            if (rank === SettlementRank.SETTLEMENT) {
+                                pool[landList[i]]++;
+                            } else {
+                                pool[landList[i]] += 2;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var resourceStock = game.resourceStock;
+
+            for (i = 0; i < 5; i++) {
+                if (resourceStock[i] - pool[i] < 0) {
+                    pool[i] = -1;
+                    
+                    this.chat(
+                          '?'
+                        , 'deeppink'
+                        , '「' + RESOURCE_NAME[i] + '」不足のため生産に失敗'
+                    );
+                }
+            }
+
+            len1 = numberList.length;
+            for (i = 0; i < len1; i++) {
+                if (i !== game.robber && numberList[i] === dice) {
+                    len2 = LAND_LINK[i].length;
+                    for (j = 0; j < len2; j++) {
+                        rank = settlementList[LAND_LINK[i][j]] & 0xff00;
+                        color = settlementList[LAND_LINK[i][j]] & 0x00ff;
+                        
+                        if (
+                               rank !== SettlementRank.NONE
+                            && pool[landList[i]] !== -1
+                        ) {
+                            if (rank === SettlementRank.SETTLEMENT) {
+                                Game.gainResource(game, color, landList[i], 1);
+                            } else {
+                                Game.gainResource(game, color, landList[i], 2);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            game.phase = Phase.MAIN;
+            game.sound = Sound.DICE;
+        }
     }
 }
 

@@ -1,237 +1,293 @@
 var Const = function () { }
 
+Const.Sound = function () { }
+Const.Sound.BELL = 0;
+Const.Sound.BUILD = 1;
+Const.Sound.CHAT = 2;
+Const.Sound.DICE = 3;
+Const.Sound.ENDING = 4;
+Const.Sound.GET = 5;
+Const.Sound.JOIN = 6;
+Const.Sound.OPENING = 7;
+Const.Sound.PASS = 8;
+Const.Sound.ROBBER = 9;
+
+Const.Index = function () { }
+Const.Index.NONE = -1;
+
+Const.Option = function () { }
+Const.Option.ALPHABET_SETUP = 0;
+Const.Option.RANDOM_SETUP = 1;
+
 Const.State = function () { }
-Const.State.Ready = 'ready';
-Const.State.Play = 'play';
+Const.State.READY = 0;
+Const.State.PLAYING = 1;
 
 Const.Phase = function () { }
-Const.Phase.SetupSettlement1 = 'setupsettlement1';
-Const.Phase.SetupRoad1 = 'setuproad1';
-Const.Phase.SetupSettlement2 = 'setupsettlement2';
-Const.Phase.SetupRoad2 = 'setuproad2';
-Const.Phase.DiceRoll = 'diceroll';
-Const.Phase.Burst = 'burst';
-Const.Phase.Robber1 = 'robber1';
-Const.Phase.Robber2 = 'robber2';
-Const.Phase.Main = 'main';
-Const.Phase.BuildRoad = 'buildroad';
-Const.Phase.BuildSettlement = 'buildsettlement';
-Const.Phase.BuildCity = 'buildcity';
-Const.Phase.InternationalTrade = 'internationaltrade';
-Const.Phase.DomesticTrade1 = 'domestictrade1';
-Const.Phase.DomesticTrade2 = 'domestictrade2';
-Const.Phase.Soldier1 = 'soldier1';
-Const.Phase.Soldier2 = 'soldier2';
-Const.Phase.RoadBuilding1 = 'roadbuilding1';
-Const.Phase.RoadBuilding2 = 'roadbuilding2';
-Const.Phase.YearOfPlenty1 = 'yearofplenty1';
-Const.Phase.YearOfPlenty2 = 'yearofplenty2';
-Const.Phase.Monopoly = 'monopoly';
+Const.Phase.NONE = -1;
+Const.Phase.SETUP_SETTLEMENT1 = 0;
+Const.Phase.SETUP_ROAD1 = 1;
+Const.Phase.SETUP_SETTLEMENT2 = 2;
+Const.Phase.SETUP_ROAD2 = 3;
+Const.Phase.DICE = 4;
+Const.Phase.BURST = 5;
+Const.Phase.ROBBER1 = 6;
+Const.Phase.ROBBER2 = 7;
+Const.Phase.MAIN = 8;
+Const.Phase.BUILD_ROAD = 9;
+Const.Phase.BUILD_SETTLEMENT = 10;
+Const.Phase.BUILD_CITY = 11;
+Const.Phase.DOMESTIC_TRADE1 = 12;
+Const.Phase.DOMESTIC_TRADE2 = 13;
+Const.Phase.INTERNATIONAL_TRADE = 14;
+Const.Phase.SOLDIER1 = 15;
+Const.Phase.SOLDIER2 = 16;
+Const.Phase.ROAD_BUILDING1 = 17;
+Const.Phase.ROAD_BUILDING2 = 18;
+Const.Phase.YEAR_OF_PLENTY1 = 19;
+Const.Phase.YEAR_OF_PLENTY2 = 20;
+Const.Phase.MONOPOLY = 21;
+
+Const.Land = function () { }
+Const.Land.DESERT = -1;
 
 Const.Resource = function () { }
-Const.Resource.Brick = 0;
-Const.Resource.Wool = 1;
-Const.Resource.Ore = 2;
-Const.Resource.Grain = 3;
-Const.Resource.Lumber = 4;
+Const.Resource.BRICK = 0;
+Const.Resource.WOOL = 1;
+Const.Resource.ORE = 2;
+Const.Resource.GRAIN = 3;
+Const.Resource.LUMBER = 4;
 
 Const.SettlementRank = function () { }
-Const.SettlementRank.None = 0x0000;
-Const.SettlementRank.Settlement = 0x0100;
-Const.SettlementRank.City = 0x0200;
+Const.SettlementRank.NONE = 0x0000;
+Const.SettlementRank.SETTLEMENT = 0x0100;
+Const.SettlementRank.CITY = 0x0200;
 
 Const.Card = function () { }
-Const.Card.Soldier = 0;
-Const.Card.VictoryPoint = 1;
-Const.Card.RoadBuilding = 2;
-Const.Card.YearOfPlenty = 3;
-Const.Card.Monopoly = 4;
-
-Const.SettlementLink = [
-    [0, 1]
-    , [2, 3]
-    , [4, 5]
-    , [0, 6]
-    , [1, 2, 7]
-    , [3, 4, 8]
-    , [5, 9]
-    , [6, 10, 11]
-    , [7, 12, 13]
-    , [8, 14, 15]
-    , [9, 16, 17]
-    , [10, 18]
-    , [11, 12, 19]
-    , [13, 14, 20]
-    , [15, 16, 21]
-    , [17, 22]
-    , [18, 23, 24]
-    , [19, 25, 26]
-    , [20, 27, 28]
-    , [21, 29, 30]
-    , [22, 31, 32]
-    , [23, 33]
-    , [24, 25, 34]
-    , [26, 27, 35]
-    , [28, 29, 36]
-    , [30, 31, 37]
-    , [32, 38]
-    , [33, 39]
-    , [34, 40, 41]
-    , [35, 42, 43]
-    , [36, 44, 45]
-    , [37, 46, 47]
-    , [38, 48]
-    , [39, 40, 49]
-    , [41, 42, 50]
-    , [43, 44, 51]
-    , [45, 46, 52]
-    , [47, 48, 53]
-    , [49, 54]
-    , [50, 55, 56]
-    , [51, 57, 58]
-    , [52, 59, 60]
-    , [53, 61]
-    , [54, 55, 62]
-    , [56, 57, 63]
-    , [58, 59, 64]
-    , [60, 61, 65]
-    , [62, 66]
-    , [63, 67, 68]
-    , [64, 69, 70]
-    , [65, 71]
-    , [66, 67]
-    , [68, 69]
-    , [70, 71]
-];
-
-Const.RoadLink = [
-    [0, 3]
-    , [0, 4]
-    , [1, 4]
-    , [1, 5]
-    , [2, 5]
-    , [2, 6]
-    , [3, 7]
-    , [4, 8]
-    , [5, 9]
-    , [6, 10]
-    , [7, 11]
-    , [7, 12]
-    , [8, 12]
-    , [8, 13]
-    , [9, 13]
-    , [9, 14]
-    , [10, 14]
-    , [10, 15]
-    , [11, 16]
-    , [12, 17]
-    , [13, 18]
-    , [14, 19]
-    , [15, 20]
-    , [16, 21]
-    , [16, 22]
-    , [17, 22]
-    , [17, 23]
-    , [18, 23]
-    , [18, 24]
-    , [19, 24]
-    , [19, 25]
-    , [20, 25]
-    , [20, 26]
-    , [21, 27]
-    , [22, 28]
-    , [23, 29]
-    , [24, 30]
-    , [25, 31]
-    , [26, 32]
-    , [27, 33]
-    , [28, 33]
-    , [28, 34]
-    , [29, 34]
-    , [29, 35]
-    , [30, 35]
-    , [30, 36]
-    , [31, 36]
-    , [31, 37]
-    , [32, 37]
-    , [33, 38]
-    , [34, 39]
-    , [35, 40]
-    , [36, 41]
-    , [37, 42]
-    , [38, 43]
-    , [39, 43]
-    , [39, 44]
-    , [40, 44]
-    , [40, 45]
-    , [41, 45]
-    , [41, 46]
-    , [42, 46]
-    , [43, 47]
-    , [44, 48]
-    , [45, 49]
-    , [46, 50]
-    , [47, 51]
-    , [48, 51]
-    , [48, 52]
-    , [49, 52]
-    , [49, 53]
-    , [50, 53]
-];
-
-Const.TileLink = [
-    [0, 3, 4, 7, 8, 12]
-    , [1, 4, 5, 8, 9, 13]
-    , [2, 5, 6, 9, 10, 14]
-    , [7, 11, 12, 16, 17, 22]
-    , [8, 12, 13, 17, 18, 23]
-    , [9, 13, 14, 18, 19, 24]
-    , [10, 14, 15, 19, 20, 25]
-    , [16, 21, 22, 27, 28, 33]
-    , [17, 22, 23, 28, 29, 34]
-    , [18, 23, 24, 29, 30, 35]
-    , [19, 24, 25, 30, 31, 36]
-    , [20, 25, 26, 31, 32, 37]
-    , [28, 33, 34, 38, 39, 43]
-    , [29, 34, 35, 39, 40, 44]
-    , [30, 35, 36, 40, 41, 45]
-    , [31, 36, 37, 41, 42, 46]
-    , [39, 43, 44, 47, 48, 51]
-    , [40, 44, 45, 48, 49, 52]
-    , [41, 45, 46, 49, 50, 53]
-];
+Const.Card.SOLDIER = 0;
+Const.Card.VICTORY_POINT = 1;
+Const.Card.ROAD_BUILDING = 2;
+Const.Card.YEAR_OF_PLENTY = 3;
+Const.Card.MONOPOLY = 4;
 
 Const.Harbor = function () { }
-Const.Harbor.None = -1;
-Const.Harbor.Brick = 0;
-Const.Harbor.Wool = 1;
-Const.Harbor.Ore = 2;
-Const.Harbor.Grain = 3;
-Const.Harbor.Lumber = 4;
-Const.Harbor.Generic = 5;
+Const.Harbor.GENERIC = 0;
+Const.Harbor.BRICK = 1;
+Const.Harbor.WOOL = 2;
+Const.Harbor.ORE = 3;
+Const.Harbor.GRAIN = 4;
+Const.Harbor.LUMBER = 5;
 
-Const.Sea = [
-    [Const.Harbor.Generic, Const.Harbor.None, Const.Harbor.Grain]
-    , [Const.Harbor.None, Const.Harbor.Ore, Const.Harbor.None]
-    , [Const.Harbor.Generic, Const.Harbor.None, Const.Harbor.Wool]
-    , [Const.Harbor.None, Const.Harbor.Generic, Const.Harbor.None]
-    , [Const.Harbor.Generic, Const.Harbor.None, Const.Harbor.Brick]
-    , [Const.Harbor.None, Const.Harbor.Lumber, Const.Harbor.None]
+Const.FONT_COLOR = [
+      'red'
+    , 'dodgerblue'
+    , 'yellow'
+    , 'lime'
 ];
 
-Const.ColorName = [
-    '赤'
+Const.COLOR_NAME = [
+      '赤'
     , '青'
     , '黄'
     , '緑'
 ];
 
-Const.ResourceName = [
-    '土'
+Const.RESOURCE_NAME = [
+      '土'
     , '羊'
     , '鉄'
     , '麦'
     , '木'
+];
+
+Const.ALPHABET_CHIP = [
+      5     // A
+    , 2     // B
+    , 6     // C
+    , 3     // D
+    , 8     // E
+    , 10    // F
+    , 9     // G
+    , 12    // H
+    , 11    // i
+    , 4     // J
+    , 8     // K
+    , 10    // L
+    , 9     // M
+    , 4     // N
+    , 5     // O
+    , 6     // P
+    , 3     // Q
+    , 11    // R
+];
+
+Const.ALPHABET_SIGNPOST = [
+      [0, 3, 7, 12, 16, 17, 18, 15, 11, 6, 2, 1, 4, 8, 13, 14, 10, 5, 9]
+    , [3, 7, 12, 16, 17, 18, 15, 11, 6, 2, 1, 0, 4, 8, 13, 14, 10, 5, 9]
+    , [7, 12, 16, 17, 18, 15, 11, 6, 2, 1, 0, 3, 8, 13, 14, 10, 5, 4, 9]
+    , [12, 16, 17, 18, 15, 11, 6, 2, 1, 0, 3, 7, 8, 13, 14, 10, 5, 4, 9]
+    , [16, 17, 18, 15, 11, 6, 2, 1, 0, 3, 7, 12, 13, 14, 10, 5, 4, 8, 9]
+    , [17, 18, 15, 11, 6, 2, 1, 0, 3, 7, 12, 16, 13, 14, 10, 5, 4, 8, 9]
+    , [18, 15, 11, 6, 2, 1, 0, 3, 7, 12, 16, 17, 14, 10, 5, 4, 8, 13, 9]
+    , [15, 11, 6, 2, 1, 0, 3, 7, 12, 16, 17, 18, 14, 10, 5, 4, 8, 13, 9]
+    , [11, 6, 2, 1, 0, 3, 7, 12, 16, 17, 18, 15, 10, 5, 4, 8, 13, 14, 9]
+    , [6, 2, 1, 0, 3, 7, 12, 16, 17, 18, 15, 11, 10, 5, 4, 8, 13, 14, 9]
+    , [2, 1, 0, 3, 7, 12, 16, 17, 18, 15, 11, 6, 5, 4, 8, 13, 14, 10, 9]
+    , [1, 0, 3, 7, 12, 16, 17, 18, 15, 11, 6, 2, 5, 4, 8, 13, 14, 10, 9]
+];
+
+Const.SETTLEMENT_LINK = [
+      [0, 6]        // 0
+    , [0, 1]        // 1
+    , [1, 2, 7]     // 2
+    , [2, 3]        // 3
+    , [3, 4, 8]     // 4
+    , [4, 5]        // 5
+    , [5, 9]        // 6
+    , [10, 18]      // 7
+    , [6, 10, 11]   // 8
+    , [11, 12, 19]  // 9
+    , [7, 12, 13]   // 10
+    , [13, 14, 20]  // 11
+    , [8, 14, 15]   // 12
+    , [15, 16, 21]  // 13
+    , [9, 16, 17]   // 14
+    , [17, 22]      // 15
+    , [23, 33]      // 16
+    , [18, 23, 24]  // 17
+    , [24, 25, 34]  // 18
+    , [19, 25, 26]  // 19
+    , [26, 27, 35]  // 20
+    , [20, 27, 28]  // 21
+    , [28, 29, 36]  // 22
+    , [21, 29, 30]  // 23
+    , [30, 31, 37]  // 24
+    , [22, 31, 32]  // 25
+    , [32, 38]      // 26
+    , [33, 39]      // 27
+    , [39, 40, 49]  // 28
+    , [34, 40, 41]  // 29
+    , [41, 42, 50]  // 30
+    , [35, 42, 43]  // 31
+    , [43, 44, 51]  // 32
+    , [36, 44, 45]  // 33
+    , [45, 46, 52]  // 34
+    , [37, 46, 47]  // 35
+    , [47, 48, 53]  // 36
+    , [38, 48]      // 37
+    , [49, 54]      // 38
+    , [54, 55, 62]  // 39
+    , [50, 55, 56]  // 40
+    , [56, 57, 63]  // 41
+    , [51, 57, 58]  // 42
+    , [58, 59, 64]  // 43
+    , [52, 59, 60]  // 44
+    , [60, 61, 65]  // 45
+    , [53, 61]      // 46
+    , [62, 66]      // 47
+    , [66, 67]      // 48
+    , [63, 67, 68]  // 49
+    , [68, 69]      // 50
+    , [64, 69, 70]  // 51
+    , [70, 71]      // 52
+    , [65, 71]      // 53
+];
+
+Const.ROAD_LINK = [
+      [1, 0]    // 0
+    , [1, 2]    // 1
+    , [2, 3]    // 2
+    , [3, 4]    // 3
+    , [4, 5]    // 4
+    , [5, 6]    // 5
+    , [0, 8]    // 6
+    , [2, 10]   // 7
+    , [4, 12]   // 8
+    , [6, 14]   // 9
+    , [7, 8]    // 10
+    , [8, 9]    // 11
+    , [9, 10]   // 12
+    , [10, 11]  // 13
+    , [11, 12]  // 14
+    , [12, 13]  // 15
+    , [13, 14]  // 16
+    , [14, 15]  // 17
+    , [7, 17]   // 18
+    , [9, 19]   // 19
+    , [11, 21]  // 20
+    , [13, 23]  // 21
+    , [15, 25]  // 22
+    , [16, 17]  // 23
+    , [17, 18]  // 24
+    , [18, 19]  // 25
+    , [19, 20]  // 26
+    , [20, 21]  // 27
+    , [21, 22]  // 28
+    , [22, 23]  // 29
+    , [23, 24]  // 30
+    , [24, 25]  // 31
+    , [25, 26]  // 32
+    , [16, 27]  // 33
+    , [18, 29]  // 34
+    , [20, 31]  // 35
+    , [22, 33]  // 36
+    , [24, 35]  // 37
+    , [26, 37]  // 38
+    , [27, 28]  // 39
+    , [28, 29]  // 40
+    , [29, 30]  // 41
+    , [30, 31]  // 42
+    , [31, 32]  // 43
+    , [32, 33]  // 44
+    , [33, 34]  // 45
+    , [34, 35]  // 46
+    , [35, 36]  // 47
+    , [36, 37]  // 48
+    , [28, 38]  // 49
+    , [30, 40]  // 50
+    , [32, 42]  // 51
+    , [34, 44]  // 52
+    , [36, 46]  // 53
+    , [38, 39]  // 54
+    , [39, 40]  // 55
+    , [40, 41]  // 56
+    , [41, 42]  // 57
+    , [42, 43]  // 58
+    , [43, 44]  // 59
+    , [44, 45]  // 60
+    , [45, 46]  // 61
+    , [39, 47]  // 62
+    , [41, 49]  // 63
+    , [43, 51]  // 64
+    , [45, 53]  // 65
+    , [47, 48]  // 66
+    , [48, 49]  // 67
+    , [49, 50]  // 68
+    , [50, 51]  // 69
+    , [51, 52]  // 70
+    , [52, 53]  // 71
+];
+
+Const.LAND_LINK = [
+      [0, 1, 2, 8, 9, 10]       // 0
+    , [2, 3, 4, 10, 11, 12]     // 1
+    , [4, 5, 6, 12, 13, 14]     // 2
+    , [7, 8, 9, 17, 18, 19]     // 3
+    , [9, 10, 11, 19, 20, 21]   // 4
+    , [11, 12, 13, 21, 22, 23]  // 5
+    , [13, 14, 15, 23, 24, 25]  // 6
+    , [16, 17, 18, 27, 28, 29]  // 7
+    , [18, 19, 20, 29, 30, 31]  // 8
+    , [20, 21, 22, 31, 32, 33]  // 9
+    , [22, 23, 24, 33, 34, 35]  // 10
+    , [24, 25, 26, 35, 36, 37]  // 11
+    , [28, 29, 30, 38, 39, 40]  // 12
+    , [30, 31, 32, 40, 41, 42]  // 13
+    , [32, 33, 34, 42, 43, 44]  // 14
+    , [34, 35, 36, 44, 45, 46]  // 15
+    , [39, 40, 41, 47, 48, 49]  // 16
+    , [41, 42, 43, 49, 50, 51]  // 17
+    , [43, 44, 45, 51, 52, 53]  // 18
 ];
 
 module.exports = Const;

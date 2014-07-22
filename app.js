@@ -1,9 +1,10 @@
-var WebSocketServer = require('ws').Server
-   , http = require('http')
-   , server = http.createServer()
-   , crypto = require('crypto')
-   , Cataso = require('./cataso/Cataso')
-   , Acquiso = require('./acquiso/Acquiso');
+var WebSocketServer = require('ws').Server;
+var http = require('http');
+var server = http.createServer();
+var crypto = require('crypto');
+var MersenneTwister = require('./MersenneTwister');
+var Cataso = require('./cataso/Cataso');
+var Acquiso = require('./acquiso/Acquiso');
 
 var roomList = [
       new Cataso()
@@ -34,163 +35,206 @@ var User = function (ws, uid, trip) {
     this.trip = trip;
 }
 
-var splitSyntax1 = function (src) {
-    return src.substring(1);
+var splitSyntaxType1 = function (source) {
+    return source.substring(1);
 }
 
-var sendUserList = function (roomIdx, ws) {
-    var result = '', i;
+var sendUserList = function (index, ws) {
+    var buff = '';
 
-    for (i = 0; i < roomList[roomIdx].userList.length; i++) {
-        if (i > 0) result += ' ';
-        if (roomList[roomIdx].userList[i].trip !== '')
-            result += roomList[roomIdx].userList[i].uid + '%' + roomList[roomIdx].userList[i].trip;
-        else
-            result += roomList[roomIdx].userList[i].uid;
+    var i;
+    var len1 = roomList[index].userList.length;
+    for (i = 0; i < len1; i++) {
+        if (i > 0) { buff += ' '; }
+
+        if (roomList[index].userList[i].trip !== '') {
+            buff += roomList[index].userList[i].uid + '%' + roomList[index].userList[i].trip;
+        } else {
+            buff += roomList[index].userList[i].uid;
+        }
     }
 
     try {
-        ws.send('A' + result);
-    } catch (e) {
-    }
+        ws.send('A' + buff);
+    } catch (e) { }
 }
 
-var createTrip = function (src) {
-    var cipher, crypted;
-    while (src.length < 8) src += 'H';
-    cipher = crypto.createCipher('des-ecb', src.substr(0, 3));
-    crypted = cipher.update(src.substr(0, 8), 'utf-8', 'hex');
+var createTrip = function (source) {
+    while (source.length < 8) { source += 'H'; }
+
+    var cipher = crypto.createCipher('des-ecb', source.substr(0, 3));
+    var crypted = cipher.update(source.substr(0, 8), 'utf-8', 'hex');
     crypted += cipher.final('hex');
+    
     return crypted.substr(0, 10);
 }
 
-var login = function (roomIdx, ws, msg) {
-    var tmp, uid, src, user, trip, i, isSuccessful, result;
+var login = function (index, ws, message) {
+    var isSuccessful = false;
 
-    tmp = (splitSyntax1(msg)).split('#', 2);
-    uid = tmp[0];
-    if (tmp.length > 1) src = tmp[1];
+    var token = splitSyntaxType1( message).split('#', 2);
+    var uid = token[0];
+
+    var src;
+    if (token.length > 1) { src = token[1]; }
+    
     if (
            uid.length > 0
-        && uid !== 'UNKNOWN'
         && uid.match(/^[0-9A-Za-z]{1,12}$/)
     ) {
-        user = null;
-        for (i = 0; i < roomList[roomIdx].userList.length; i++) {
-            if (uid === roomList[roomIdx].userList[i].uid) {
-                user = roomList[roomIdx].userList[i];
+        isSuccessful = true;
+
+        var i;
+        var len1 = roomList[index].userList.length;
+        for (i = 0; i < len1; i++) {
+            if (uid === roomList[index].userList[i].uid) {
+                isSuccessful = false;
                 break;
             }
         }
-        if (user === null)
-            isSuccessful = true;
-        else
-            isSuccessful = false;
+
     }
+
     if (isSuccessful) {
         try {
-            if (src)
-                trip = createTrip(src);
-            else
-                trip = '';
-            if (trip !== '')
+            var trip = '';
+
+            if (src) { trip = createTrip(src); }
+
+            if (trip !== '') {
                 ws.send('B' + uid + '%' + trip);
-            else
+            } else {
                 ws.send('B' + uid);
-            sendUserList(roomIdx, ws);
-            user = new User(ws, uid, trip);
-            roomList[roomIdx].userList.push(user);
-            if (user.trip !== '')
-                roomList[roomIdx]._broadcast('D' + user.uid + '%' + user.trip);
-            else
-                roomList[roomIdx]._broadcast('D' + user.uid);
-            if (roomList[roomIdx].ctrlr !== null) {
-                console.log(roomList[roomIdx].ctrlr.uid);
-                ws.send('I' + roomList[roomIdx].ctrlr.uid);
+            }
+
+            sendUserList(index, ws);
+
+            var user = new User(ws, uid, trip);
+            roomList[index].userList.push(user);
+            
+            if (user.trip !== '') {
+                roomList[index]._broadcast('D' + user.uid + '%' + user.trip);
+            } else {
+                roomList[index]._broadcast('D' + user.uid);
+            }
+
+            if (roomList[index].owner !== null) {
+                console.log(roomList[index].owner.uid);
+                ws.send('I' + roomList[index].owner.uid);
             }
         } catch (e) {
         }
     } else {
         try {
             ws.send('C');
-        } catch (e) {
-        }
+        } catch (e) { }
     }
 }
 
 var wss = new WebSocketServer({server:server});
 
 wss.on('connection', function (ws) {
+    ws.on('close', function () {
+        var user = null;
 
-    ws.on('close', function (msg) {
-        var roomIdx, i, user = null;
-
-        for (roomIdx = 0; roomIdx < roomList.length; roomIdx++) {
-            for (i = 0; i < roomList[roomIdx].userList.length; i++) {
-                if (ws === roomList[roomIdx].userList[i].ws) {
-                    user = roomList[roomIdx].userList[i];
-                    roomList[roomIdx].removeUser(user);
+        var i;
+        var len1 = roomList.length;
+        for (i = 0; i < len1; i++) {
+            var j;
+            var len2 = roomList[i].userList.length;
+            for (j =  0; j < len2; j++) {
+                if (ws === roomList[i].userList[j].ws) {
+                    user = roomList[i].userList[j];
+                    roomList[i].removeUser(user);
                     break;
                 }
             }
-            if (user !== null) break;
+
+            if (user !== null) { break; }
         }
     });
 
-    ws.on('message', function (msg) {
-        var roomIdx = msg.charCodeAt(0), user = null, i, result, option;
+    ws.on('message', function (message) {
+        var index = message.charCodeAt(0);
 
-        msg = msg.substring(1);
+        message = message.substring(1);
 
-        if (roomIdx === 100) {
-            result = String.fromCharCode(100);
-            for (i = 0; i < roomList.length; i++) {
-                result += roomList[i].userList.length + ' ';
-                result += roomList[i].symbol + ' ';
-                if (roomList[i].isPlaying)
-                    result += 'p';
-                else
-                    result += 'r';
-                if (i < roomList.length - 1) result += ' ';
+        var i;
+        var len1;
+
+        if (index === 100) {
+            var buff = String.fromCharCode(100);
+
+            len1 = roomList.length;
+            for (i = 0; i < len1; i++) {
+                buff += roomList[i].userList.length + ' ';
+                buff += roomList[i].symbol + ' ';
+
+                if (roomList[i].isPlaying) {
+                    buff += 'p';
+                } else {
+                    buff += 'r';
+                }
+
+                if (i < len1 - 1) { buff += ' '; }
             }
+
             try {
-                ws.send(result);
+                ws.send(buff);
             } catch (e) {
             }
-            return;
-        } else if (roomIdx >= roomList.length || msg.length === 0) {
-            return;
-        }
 
-        for (i in roomList[roomIdx].userList) {
-            if (ws === roomList[roomIdx].userList[i].ws) {
-                user = roomList[roomIdx].userList[i];
+            return;
+        } else if (index >= roomList.length || message.length === 0) { return; }
+
+        var user = null;
+
+        len1 = roomList[index].userList.length;
+        for (i = 0; i < len1; i++) {
+            if (ws === roomList[index].userList[i].ws) {
+                user = roomList[index].userList[i];
                 break;
             }
         }
 
-        if (user === null) user = new User(ws, 'UNKNOWN');
+        var param;
 
-        if (user.uid === 'UNKNOWN') {
-            switch (msg[0]) {
+        if (user === null) {
+            switch (message[0]) {
                 case 'a':
-                    sendUserList(roomIdx, ws);
+                    sendUserList(index, ws);
                     break;
                 case 'b':
-                    login(roomIdx, ws, msg);
+                    login(index, ws, message);
                     break;
             }
         } else {
-            switch (msg[0]) {
+            switch (message[0]) {
                 case 'c':
-                    option = splitSyntax1(msg);
-                    roomList[roomIdx].onChat(user, option);
-                    if (option.length > 1 && option[0] === '/')
-                        roomList[roomIdx].onCommand(user, option.split(' '));
+                    param = splitSyntaxType1(message);
+
+                    roomList[index].onChat(user, param);
+
+                    if (param.length > 1 && param[0] === '/') {
+                        roomList[index].onCommand(user, param.split(' '));
+                    }
+
                     break;
                 case 'd':
-                    option = splitSyntax1(msg);
-                    roomList[roomIdx].onMessage(user.uid, option);
+                    param = splitSyntaxType1(message);
+
+                    roomList[index].onMessage(user.uid, param);
+                    break;
+                case 'e':
+                    roomList[index].chat('?', 'deeppink', user.uid + 'がベルを鳴らしました。');
+                    roomList[index]._broadcast('J');
+                    break;
+                case 'f':
+                    roomList[index].chat(
+                          '?'
+                        , 'deeppink'
+                        , user.uid + 'のダイス=>[' + MersenneTwister.Share.nextInt(1, 100) + ']'
+                    );
                     break;
             }
         }

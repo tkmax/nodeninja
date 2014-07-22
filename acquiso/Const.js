@@ -1,59 +1,71 @@
 var Const = function () { }
 
-Const.FontColor = [
-    'red'
+Const.Sound = function () { }
+Const.Sound.BELL = 0;
+Const.Sound.BUILD = 1;
+Const.Sound.CHAT = 2;
+Const.Sound.DICE = 3;
+Const.Sound.ENDING = 4;
+Const.Sound.GET = 5;
+Const.Sound.JOIN = 6;
+Const.Sound.OPENING = 7;
+Const.Sound.PASS = 8;
+Const.Sound.ROBBER = 9;
+
+Const.Index = function () { }
+Const.Index.NONE = -1;
+
+Const.State = function () { }
+Const.State.READY = 0;
+Const.State.PLAYING = 1;
+
+Const.Phase = function () { }
+Const.Phase.NONE = -1;
+Const.Phase.PLAY = 0;
+Const.Phase.CHAIN = 1;
+Const.Phase.ABSORB = 2;
+Const.Phase.MERGE = 3;
+Const.Phase.SELL = 4;
+Const.Phase.TRADE = 5;
+Const.Phase.BUY = 6;
+
+Const.HotelChain = function () { }
+Const.HotelChain.NONE = -1;
+
+Const.Position = function () { }
+Const.Position.NONE = -1;
+
+Const.Rotation = function () { }
+Const.Rotation.NONE = 0;
+Const.Rotation.HORIZONTAL = 1;
+Const.Rotation.VERTICAL = 2;
+
+Const.FONT_COLOR = [
+      'red'
     , 'dodgerblue'
     , 'yellow'
     , 'lime'
 ];
 
-Const.Index = function () { }
-Const.Index.None = -1;
-
-Const.State = function () { }
-Const.State.Ready = 0;
-Const.State.Playing = 1;
-
-Const.ColorName = [
-    '赤'
+Const.COLOR_NAME = [
+      '赤'
     , '青'
     , '黄'
     , '緑'
 ];
 
-Const.Phase = function () { }
-Const.Phase.None = -1;
-Const.Phase.Play = 0;
-Const.Phase.Trash = 1;
-Const.Phase.Chain = 2;
-Const.Phase.Absorb = 3;
-Const.Phase.Merge = 4;
-Const.Phase.Sell = 5;
-Const.Phase.Trade = 6;
-Const.Phase.Buy = 7;
-
-Const.HotelChain = function () { }
-Const.HotelChain.None = -1;
-Const.HotelChain.WorldWide = 0;
-Const.HotelChain.Sackson = 1;
-Const.HotelChain.Festival = 2;
-Const.HotelChain.Imperial = 3;
-Const.HotelChain.American = 4;
-Const.HotelChain.Continental = 5;
-Const.HotelChain.Tower = 6;
-
-Const.HotelChainName = [
-    '黒ポーン'
-    , '白ポーン'
-    , 'ナイト'
-    , 'ビショップ'
-    , 'ルーク'
-    , 'クイーン'
-    , 'キング'
+Const.HOTEL_CHAIN_NAME = [
+      'タワー'
+    , 'ロクサー'
+    , 'アメリカン'
+    , 'ワールドワイド'
+    , 'フェスティバル'
+    , 'インペリアル'
+    , 'コンチネンタル'
 ];
 
-Const.TileName = [
-    'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'A12'
+Const.TILE_NAME = [
+      'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'A12'
     , 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12'
     , 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12'
     , 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12'
@@ -64,8 +76,8 @@ Const.TileName = [
     , 'I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8', 'I9', 'I10', 'I11', 'I12'
 ];
 
-Const.StockPrice = [
-    [200, 300, 400, 500, 600, 700, 800, 900, 1000]
+Const.STOCK_PRICE = [
+      [200, 300, 400, 500, 600, 700, 800, 900, 1000]
     , [200, 300, 400, 500, 600, 700, 800, 900, 1000]
     , [300, 400, 500, 600, 700, 800, 900, 1000, 1100]
     , [300, 400, 500, 600, 700, 800, 900, 1000, 1100]
@@ -74,8 +86,8 @@ Const.StockPrice = [
     , [400, 500, 600, 700, 800, 900, 1000, 1100, 1200]
 ];
 
-Const.MajorityBonus = [
-    [2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
+Const.MAJORITY_BONUS = [
+      [2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
     , [2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
     , [3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000]
     , [3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000]
@@ -84,8 +96,8 @@ Const.MajorityBonus = [
     , [4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000]
 ];
 
-Const.MinorityBonus = [
-    [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
+Const.MINORITY_BONUS = [
+      [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
     , [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
     , [1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500]
     , [1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500]
@@ -93,13 +105,5 @@ Const.MinorityBonus = [
     , [2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000]
     , [2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000]
 ];
-
-Const.Position = function () { }
-Const.Position.None = -1;
-
-Const.Rotation = function () { }
-Const.Rotation.None = 0;
-Const.Rotation.Horizontal = 1;
-Const.Rotation.Vertical = 2;
 
 module.exports = Const;

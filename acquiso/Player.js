@@ -9,13 +9,13 @@ Player.clear = function (player) {
 }
 
 Player.start = function (player) {
-    var i;
-
     player.money = 6000;
     player.hand.length = 0;
     player.fresh.length = 0;
-    for (i = player.certificate.length - 1; i >= 0; i--)
-        player.certificate[i] = 0;
+
+    var i;
+    var len1 = player.certificate.length;
+    for (i = 0; i < len1; i++) { player.certificate[i] = 0; }
 }
 
 module.exports = Player;
