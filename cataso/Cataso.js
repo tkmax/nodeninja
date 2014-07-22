@@ -397,8 +397,12 @@ Cataso.prototype.onMessage = function (uid, message) {
                                     for (j = 0; j < len2; j++) { tmp.push(i); }
                                 }
 
-                                i = tmp[that.mt.nextInt(0, tmp.length - 1)];
-                                
+                                if(tmp.length === 1) {
+                                    i = tmp[0];
+                                } else {
+                                    i = tmp[that.mt.nextInt(0, tmp.length - 1)];
+                                }
+
                                 loseResource[i]--;
                                 game.playerList[game.active].resource[i]++;
                                 
@@ -607,6 +611,7 @@ Cataso.prototype.onMessage = function (uid, message) {
                     case 'w':
                         (function (that) {
                             var game = that.game;
+                            var active = game.active;
 
                             if (game.phase === Phase.DOMESTIC_TRADE2) {
                                 var trade = game.trade;
@@ -620,7 +625,6 @@ Cataso.prototype.onMessage = function (uid, message) {
                                     && tradeResource[Resource.GRAIN] >= output[Resource.GRAIN]
                                     && tradeResource[Resource.LUMBER] >= output[Resource.LUMBER]
                                 ) {
-                                    var active = game.active;
                                     var activeResource = game.playerList[active].resource;
                                     var input = trade.input;
 
@@ -640,6 +644,7 @@ Cataso.prototype.onMessage = function (uid, message) {
                                 var priority = game.priority;
                                 priority.length = 0;
                                 priority.push(active);
+
                                 that.game.phase = Phase.MAIN;
                             }
                         })(this);
@@ -728,7 +733,7 @@ Cataso.prototype.onMessage = function (uid, message) {
                                 
                                 game.playerSize = 4;
                                 game.state = State.READY;
-                                game.isPlaying = false;
+                                that.isPlaying = false;
 
                                 game.sound = Sound.ENDING;
                             }
@@ -876,8 +881,12 @@ Cataso.prototype.onMessage = function (uid, message) {
                                     var len2 = loseResource[i];
                                     for (j = 0; j < len2; j++) { tmp.push(i); }
                                 }
-                                
-                                i = tmp[that.mt.nextInt(0, tmp.length - 1)];
+
+                                if(tmp.length === 1) {
+                                    i = tmp[0];
+                                } else {
+                                    i = tmp[that.mt.nextInt(0, tmp.length - 1)];
+                                }
 
                                 loseResource[i]--;
                                 game.playerList[game.active].resource[i]++;
@@ -1166,7 +1175,7 @@ Cataso.prototype.diceRoll = function () {
 
         game.dice1 = dice.first;
         game.dice2 = dice.seccond;
-        
+
         var dice = game.dice1 + game.dice2;
         
         this.chat(

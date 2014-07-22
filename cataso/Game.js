@@ -16,15 +16,15 @@ var SETTLEMENT_LINK = Const.SETTLEMENT_LINK;
 
 var Game = function () { }
 
-Game.split = function (source) {
-    return source.slice(1).split(' ');
-}
-
 Game.suffle = function (source, mt) {
     var tmp = [];
     
     while (source.length > 0) { tmp.push(source.splice(mt.nextInt(source.length), 1)[0]); }
     
+    while (tmp.length > 0) { source.push(tmp.splice(mt.nextInt(tmp.length), 1)[0]); }
+
+    while (source.length > 0) { tmp.push(source.splice(mt.nextInt(source.length), 1)[0]); }
+
     while (tmp.length > 0) { source.push(tmp.splice(mt.nextInt(tmp.length), 1)[0]); }
 }
 
@@ -440,6 +440,7 @@ Game.buildCity = function (game, index) {
     
     game.settlementList[index] = SettlementRank.CITY | active;
     playerList[active].cityStock--;
+    playerList[active].settlementStock++;
     playerList[active].baseScore++;
 }
 

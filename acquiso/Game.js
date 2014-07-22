@@ -15,13 +15,13 @@ var Game = function () { }
 Game.suffle = function (source, mt) {
     var tmp = [];
 
-    while (source.length > 0) {
-        tmp.push(source.splice(mt.nextInt(source.length), 1)[0]);
-    }
+    while (source.length > 0) { tmp.push(source.splice(mt.nextInt(source.length), 1)[0]); }
 
-    while (tmp.length > 0) {
-        source.push(tmp.splice(mt.nextInt(tmp.length), 1)[0]);
-    }
+    while (tmp.length > 0) { source.push(tmp.splice(mt.nextInt(tmp.length), 1)[0]); }
+
+    while (source.length > 0) { tmp.push(source.splice(mt.nextInt(source.length), 1)[0]); }
+
+    while (tmp.length > 0) { source.push(tmp.splice(mt.nextInt(tmp.length), 1)[0]); }
 }
 
 Game.clear = function (game) {
