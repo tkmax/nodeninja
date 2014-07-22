@@ -17,7 +17,7 @@ Dice.reset = function(dice) {
     dice.reel.length = 0;
 
     var i;
-    for(i = 0; i < 20; i++) {
+    for(i = 0; i < 30; i++) {
         var j;
         for(j = 1; j <= 6; j++) {
             dice.reel.push(j);
