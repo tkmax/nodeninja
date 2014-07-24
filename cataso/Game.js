@@ -294,6 +294,8 @@ Game.roadSize = function (game, color, index, max, depth) {
         var roadList = game.roadList;
         roadList[index] = Index.NONE;
 
+        if (depth + 1 > max) { max = depth + 1; }
+
         var settlementList = game.settlementList;
         
         var i;
