@@ -252,11 +252,12 @@ Game.setupAlphabet = function(game, mt) {
     var j = 0;
 
     var i;
-    var len1 = ALPHABET_CHIP.length;
-    for (i = 0; j < len1; i++) {
+    var len1 = ALPHABET_SIGNPOST.length;
+    var len2 = ALPHABET_CHIP.length;
+    for (i = 0; i < len1; i++) {
         if (game.landList[ALPHABET_SIGNPOST[index][i]] === Land.DESERT) {
             game.numberList[ALPHABET_SIGNPOST[index][i]] = Land.DESERT;
-        } else {
+        } else if(j < len2) {
             game.numberList[ALPHABET_SIGNPOST[index][i]] = ALPHABET_CHIP[j];
 
             j++;
