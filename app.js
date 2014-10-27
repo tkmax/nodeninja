@@ -1,4 +1,4 @@
-var WebSocketServer = require('ws').Server;
+﻿var WebSocketServer = require('ws').Server;
 var http = require('http');
 var server = http.createServer();
 var crypto = require('crypto');
@@ -240,6 +240,8 @@ wss.on('connection', function (ws) {
         }
     });
 });
+
+console.log('start');
 
 server.listen(7911);
 
