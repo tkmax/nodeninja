@@ -124,7 +124,16 @@ BattleRaiso.prototype.onMessage = function (uid, message) {
                     (function (that) {
                         var game = that.game;
 
-                        if (game.phase === Phase.MAIN) {
+                        if (
+                               game.phase === Phase.MAIN
+                            || game.phase === Phase.COMMON
+                            || game.phase === Phase.FOG
+                            || game.phase === Phase.MUD
+                            || game.phase === Phase.SCOUT1
+                            || game.phase === Phase.REDEPLOY1
+                            || game.phase === Phase.DESERTER
+                            || game.phase === Phase.TRAITOR1
+                        ) {
                             var index = parseInt(that.split(message)[0]);
                             that.chat('?', 'deeppink', '**' + (index + 1) + '列目 旗獲得**');
 
@@ -161,7 +170,7 @@ BattleRaiso.prototype.onMessage = function (uid, message) {
                         var game = that.game;
 
                         if (
-                            game.phase === Phase.MAIN
+                               game.phase === Phase.MAIN
                             || game.phase === Phase.COMMON
                             || game.phase === Phase.FOG
                             || game.phase === Phase.MUD
