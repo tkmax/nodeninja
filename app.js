@@ -1,4 +1,4 @@
-var WebSocketServer = require('ws').Server;
+﻿var WebSocketServer = require('ws').Server;
 var http = require('http');
 var server = http.createServer();
 var crypto = require('crypto');
@@ -8,7 +8,7 @@ var BattleRaiso = require('./battleraiso/BattleRaiso');
 var Acquiso = require('./acquiso/Acquiso');
 
 var roomList = [
-      new BattleRaiso()
+      new Cataso()
     , new Cataso()
     , new Cataso()
     , new Acquiso()
