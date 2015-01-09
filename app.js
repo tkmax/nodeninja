@@ -1,4 +1,4 @@
-﻿var WebSocketServer = require('ws').Server;
+var WebSocketServer = require('ws').Server;
 var http = require('http');
 var server = http.createServer();
 var crypto = require('crypto');
@@ -12,7 +12,7 @@ var roomList = [
     , new Cataso()
     , new Cataso()
     , new Acquiso()
-    , new Acquiso()
+    , new BattleRaiso()
     , new Cataso()
     , new Cataso()
     , new Cataso()
@@ -26,7 +26,7 @@ var roomList = [
     , new Acquiso()
     , new Acquiso()
     , new Acquiso()
-    , new Acquiso()
+    , new BattleRaiso()
     , new BattleRaiso()
 ];
 
@@ -120,8 +120,7 @@ var login = function (index, ws, message) {
             }
 
             if (roomList[index].owner !== null) {
-                console.log(roomList[index].owner.uid);
-                ws.send('I' + roomList[index].owner.uid);
+                ws.send('F' + roomList[index].owner.uid);
             }
         } catch (e) {
         }

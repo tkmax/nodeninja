@@ -135,6 +135,7 @@ BattleRaiso.prototype.onMessage = function (uid, message) {
                             || game.phase === Phase.TRAITOR1
                         ) {
                             var index = parseInt(that.split(message)[0]);
+
                             that.chat('?', 'deeppink', '**' + (index + 1) + '列目 旗獲得**');
 
                             var active = game.active;
